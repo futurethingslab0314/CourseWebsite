@@ -4,6 +4,12 @@
 @import './radius.css';
 @import './shadow.css';
 @import './motion.css';
+@import './border.css';
+@import './state.css';
+@import './effects.css';
+@import './layout.css';
+@import './breakpoint.css';
+@import './z-index.css';
 
 * {
   box-sizing: border-box;

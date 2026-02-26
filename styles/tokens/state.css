@@ -1,0 +1,21 @@
+:root {
+    --color-bg-page: var(--color-white);
+    --color-bg-canvas: var(--color-white);
+    --color-bg-surface: var(--color-gray-50);
+    --color-bg-surface-strong: var(--color-zinc-50);
+
+    --color-text-primary: var(--color-gray-900);
+    --color-text-secondary: var(--color-gray-600);
+    --color-text-muted: var(--color-gray-400);
+    --color-text-subtle: var(--color-gray-300);
+    --color-text-inverse: var(--color-white);
+
+    --color-action-primary: var(--color-theme-2-accent);
+    --color-action-primary-hover: #1d4ed8;
+    --color-action-neutral: var(--color-zinc-900);
+    --color-action-neutral-hover: var(--color-black);
+
+    --color-focus-ring: var(--color-black);
+    --color-divider: var(--border-color-subtle);
+    --color-border-subtle: var(--border-color-subtle);
+}

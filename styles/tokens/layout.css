@@ -1,0 +1,21 @@
+:root {
+    --container-max-main: 80rem;
+    /* tailwind max-w-7xl */
+    --container-max-modal: 80rem;
+
+    --gutter-x-mobile: 1.5rem;
+    /* px-6 */
+    --gutter-x-desktop: 3rem;
+    /* md:px-12 */
+
+    --header-padding-y: 1.25rem;
+    /* py-5 */
+    --main-padding-y: 3rem;
+    /* py-12 */
+    --footer-padding-y: 4rem;
+    /* py-16 */
+
+    --section-gap-sm: 1.5rem;
+    --section-gap-md: 3rem;
+    --section-gap-lg: 5rem;
+}

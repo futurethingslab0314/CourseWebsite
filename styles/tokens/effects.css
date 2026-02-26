@@ -1,0 +1,12 @@
+:root {
+    --effect-backdrop-blur-sm: blur(4px);
+    --effect-backdrop-blur-md: blur(12px);
+    --effect-backdrop-blur-xl: blur(24px);
+
+    --effect-overlay-white-98: rgb(255 255 255 / 0.98);
+    --effect-overlay-black-10: rgb(0 0 0 / 0.1);
+    --effect-overlay-black-0: rgb(0 0 0 / 0);
+
+    --effect-image-grayscale-on: grayscale(1);
+    --effect-image-grayscale-off: grayscale(0);
+}

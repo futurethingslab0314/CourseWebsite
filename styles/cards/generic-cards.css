@@ -36,5 +36,5 @@
 .card--generic-cards .generic-cards__dot {
   width: 10px;
   height: 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
 }

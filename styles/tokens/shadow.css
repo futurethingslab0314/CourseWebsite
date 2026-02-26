@@ -1,6 +1,7 @@
 :root {
-  --shadow-sm: 0 6px 18px rgba(18, 24, 38, 0.06);
-  --shadow-md: 0 14px 34px rgba(18, 24, 38, 0.09);
-  --shadow-lg: 0 20px 44px rgba(18, 24, 38, 0.15);
-  --shadow-xl: 0 28px 64px rgba(18, 24, 38, 0.18);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-card-spec: 2px 2px 0 0 rgb(0 0 0 / 0.05);
 }

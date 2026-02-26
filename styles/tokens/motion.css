@@ -3,4 +3,11 @@
   --motion-base: 220ms;
   --motion-slow: 420ms;
   --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Legacy aliases for existing cards animations */
+  --duration-base: var(--motion-base);
+  --duration-slow: var(--motion-slow);
+  --duration-slowest: calc(var(--motion-slow) * 1.2);
+  --easing-standard: ease;
+  --easing-emphasized: var(--ease-emphasis);
 }

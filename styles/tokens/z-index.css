@@ -1,0 +1,6 @@
+:root {
+    --z-base: 1;
+    --z-sticky-header: 50;
+    --z-overlay: 100;
+    --z-overlay-controls: 110;
+}

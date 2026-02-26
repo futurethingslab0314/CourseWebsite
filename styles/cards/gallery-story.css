@@ -1,6 +1,4 @@
 .card--gallery-story {
-  --card-bg: var(--color-bg-surface);
-  --card-gap: var(--space-5);
   --card-title-size: var(--type-h3);
 }
 

@@ -1,0 +1,18 @@
+:root {
+    --border-width-none: 0;
+    --border-width-thin: 1px;
+    --border-width-medium: 2px;
+    --border-width-thick: 4px;
+
+    --border-color-subtle: var(--color-gray-100);
+    --border-color-soft: var(--color-gray-50);
+    --border-color-default: var(--color-gray-200);
+    --border-color-strong: var(--color-gray-300);
+    --border-color-inverse: var(--color-zinc-800);
+    --border-color-accent: var(--color-theme-2-accent);
+
+    --border-subtle: var(--border-width-thin) solid var(--border-color-subtle);
+    --border-soft: var(--border-width-thin) solid var(--border-color-soft);
+    --border-default: var(--border-width-thin) solid var(--border-color-default);
+    --border-inverse: var(--border-width-thin) solid var(--border-color-inverse);
+}

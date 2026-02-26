@@ -22,22 +22,24 @@
 .card__item {
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
-  background: #fff;
+  background: var(--color-white);
   padding: var(--space-4);
 }
 
 .card__title {
   margin: 0;
   font-size: var(--card-title-size);
-  font-weight: 600;
+  font-weight: var(--font-weight-bold);
   letter-spacing: var(--tracking-tight);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
 }
 
 .card__text {
   margin: 0;
   font-size: var(--type-caption);
   color: var(--color-text-secondary);
-  line-height: 1.6;
+  line-height: var(--line-height-normal);
 }
 
 .card__micro {
