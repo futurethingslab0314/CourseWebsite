@@ -101,27 +101,41 @@ const resolveMediaPriority = (project: Project | undefined, course: Course | nul
   return 'balanced';
 };
 
-const AppFrame: React.FC<{ children: React.ReactNode; onHome: () => void; homeEnabled: boolean }> = ({ children, onHome, homeEnabled }) => (
+const AppFrame: React.FC<{
+  children: React.ReactNode;
+  onHome: () => void;
+  homeEnabled: boolean;
+  headerTitle: string;
+  headerSubtitle: string;
+}> = ({ children, onHome, homeEnabled, headerTitle, headerSubtitle }) => (
   <main className="min-h-screen bg-[var(--color-bg-canvas)] text-[var(--color-text-primary)]">
     <header className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
-      <div className="mx-auto flex w-full max-w-[var(--container-max)] items-center justify-between px-4 py-4">
-        <button
-          onClick={onHome}
-          disabled={!homeEnabled}
-          className="text-left text-[var(--type-h3)] leading-[1.4] font-medium tracking-[var(--tracking-tight)] disabled:cursor-default disabled:opacity-100"
-        >
-          Back To Design Course List
-        </button>
-        <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-          Course Showcase
-        </p>
+      <div className="mx-auto grid w-full max-w-[var(--container-max)] gap-4 px-8 py-6 md:grid-cols-[1fr_auto] md:items-end">
+        <div>
+          <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+            {headerSubtitle}
+          </p>
+          <h2 className="mt-2 text-[var(--type-h3)] leading-[1.4] font-medium">{headerTitle}</h2>
+        </div>
+        <nav className="flex items-center gap-4">
+          <button
+            onClick={onHome}
+            disabled={!homeEnabled}
+            className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)] disabled:opacity-40"
+          >
+            Course Index
+          </button>
+          <a href="/style-playground" className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] hover:border-[var(--color-text-primary)]">
+            Style Playground
+          </a>
+        </nav>
       </div>
     </header>
 
     {children}
 
     <footer className="mt-16 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
-      <div className="mx-auto flex w-full max-w-[var(--container-max)] flex-col gap-4 px-4 py-6 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+      <div className="mx-auto flex w-full max-w-[var(--container-max)] flex-col gap-4 px-8 py-6 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
         <p>National Taiwan University of Science and Technology / Design Department</p>
         <p>Lecture by Assistant Prof. Yu-Ting Cheng</p>
       </div>
@@ -223,8 +237,8 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <AppFrame onHome={goHome} homeEnabled={false}>
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16 text-center text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
+      <AppFrame onHome={goHome} homeEnabled={false} headerTitle="Course Portfolio Showcase" headerSubtitle="Global Header">
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-8 py-16 text-center text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
           Loading course data...
         </div>
       </AppFrame>
@@ -233,16 +247,16 @@ const App: React.FC = () => {
 
   if (error) {
     return (
-      <AppFrame onHome={goHome} homeEnabled={Boolean(activeSlug)}>
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16 text-center text-[var(--type-body)] leading-[1.5] text-[var(--color-text-primary)]">Error: {error}</div>
+      <AppFrame onHome={goHome} homeEnabled={Boolean(activeSlug)} headerTitle="Course Portfolio Showcase" headerSubtitle="Global Header">
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-8 py-16 text-center text-[var(--type-body)] leading-[1.5] text-[var(--color-text-primary)]">Error: {error}</div>
       </AppFrame>
     );
   }
 
   if (!activeSlug) {
     return (
-      <AppFrame onHome={goHome} homeEnabled={false}>
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16">
+      <AppFrame onHome={goHome} homeEnabled={false} headerTitle="Course Portfolio Showcase" headerSubtitle="Global Header">
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-8 py-16">
           <section className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
             <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Course Website</p>
             <h1 className="mt-4 text-[var(--type-h1)] leading-[1.2] font-medium">TemplateA Course Index</h1>
@@ -279,8 +293,8 @@ const App: React.FC = () => {
 
   if (!currentCourse) {
     return (
-      <AppFrame onHome={goHome} homeEnabled={true}>
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16">
+      <AppFrame onHome={goHome} homeEnabled={true} headerTitle="Course Portfolio Showcase" headerSubtitle="Global Header">
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-8 py-16">
           <p className="text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">Course not found: /courses/{activeSlug}</p>
           <button onClick={goHome} className="mt-4 border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-body)] leading-[1.5]">Back home</button>
         </div>
@@ -298,93 +312,125 @@ const App: React.FC = () => {
   const activeMediaPriority = resolveMediaPriority(activeProject, currentCourse);
 
   return (
-    <AppFrame onHome={goHome} homeEnabled={true}>
-      <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16">
-        <section className="overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
-          {currentCourse.coverImage ? <img src={currentCourse.coverImage} alt={currentCourse.courseName} className="h-56 w-full object-cover md:h-72" /> : null}
-          <div className="p-6">
-            <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Course Overview</p>
-            <h1 className="mt-4 text-[var(--type-h1)] leading-[1.2] font-medium">{currentCourse.courseName}</h1>
-            <p className="mt-4 max-w-4xl text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">{currentCourse.courseSummary || 'No summary provided.'}</p>
+    <AppFrame onHome={goHome} homeEnabled={true} headerTitle={currentCourse.courseName} headerSubtitle="Course Portfolio Showcase">
+      <div className="mx-auto w-full max-w-[var(--container-max)] px-8 py-16">
+        <section>
+          <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Page Header</p>
+          <h1 className="mt-2 text-[var(--type-h1)] leading-[1.2] font-medium">{currentCourse.courseName}</h1>
+          <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
+          <div className="mt-6 flex flex-wrap gap-4">
+            {courseProjects.map((project, idx) => {
+              const isActive = idx === projectPage;
+              return (
+                <button
+                  key={project.id}
+                  onClick={() => setProjectPage(idx)}
+                  className={`border px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] transition-colors ${isActive
+                    ? 'border-[var(--color-text-primary)] bg-[var(--color-text-primary)] text-white'
+                    : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-primary)]'
+                    }`}
+                >
+                  {project.tabName || `Project ${idx + 1}`}
+                </button>
+              );
+            })}
           </div>
         </section>
 
-        {courseProjects.length > 0 ? (
-          <section className="mt-16 space-y-10">
-            <div className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-              <div className="flex flex-wrap gap-4">
-                {courseProjects.map((project, idx) => {
-                  const isActive = idx === projectPage;
-                  return (
-                    <button
-                      key={project.id}
-                      onClick={() => setProjectPage(idx)}
-                      className={`border px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] transition-all ${isActive
-                          ? 'border-[var(--color-text-primary)] bg-[var(--color-text-primary)] text-white'
-                          : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-primary)] hover:text-[var(--color-text-primary)]'
-                        }`}
-                    >
-                      {project.tabName || `Project ${idx + 1}`}
-                    </button>
-                  );
-                })}
+        {courseProjects.length > 0 && activeProject ? (
+          <>
+            <section className="mt-10 grid items-start gap-6 lg:grid-cols-[3fr_2fr]">
+              <div className="overflow-hidden bg-[var(--color-bg-surface)]">
+                {currentCourse.coverImage ? (
+                  <img src={currentCourse.coverImage} alt={currentCourse.courseName} className="aspect-[4/3] w-full object-cover" />
+                ) : (
+                  <div className="aspect-[4/3] w-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]" />
+                )}
               </div>
-            </div>
+              <div>
+                <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+                  Hero Module
+                </p>
+                <h2 className="mt-2 text-[var(--type-h2)] leading-[1.2857] font-medium">{activeProject.tabName || activeProject.projectName}</h2>
+                <p className="mt-4 text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
+                  {currentCourse.courseSummary || 'No summary provided.'}
+                </p>
+                <p className="mt-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+                  Project {projectPage + 1} of {courseProjects.length}
+                </p>
+              </div>
+            </section>
 
-            {activeProject ? (
-              <>
-                <section className="flex flex-wrap items-start justify-between gap-4 border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-                  <div>
-                    <h2 className="text-[var(--type-h2)] leading-[1.2857] font-medium">{activeProject.tabName || activeProject.projectName}</h2>
-                    <p className="mt-4 text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
-                      {activeProject.projectDescription || 'No project description provided.'}
-                    </p>
+            <section className="mt-16">
+              <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Project Overview</p>
+              <h3 className="mt-2 text-[var(--type-h3)] leading-[1.4] font-medium">Editorial Summary</h3>
+              <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
+              <div className="mt-6 max-w-[680px]">
+                <p className="text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
+                  {activeProject.projectDescription || 'No project description provided.'}
+                </p>
+              </div>
+            </section>
+
+            <section className="mt-16">
+              <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Interactive Data Card Spec</p>
+              <h3 className="mt-2 text-[var(--type-h3)] leading-[1.4] font-medium">Interaction Controls</h3>
+              <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <article className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
+                  <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Active Pattern</p>
+                  <p className="mt-4 text-[var(--type-body)] leading-[1.5] text-[var(--color-text-primary)]">{activePattern}</p>
+                </article>
+                <article className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
+                  <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Project Navigation</p>
+                  <div className="mt-4 flex items-center justify-between gap-4">
+                    <button
+                      onClick={() => setProjectPage((p) => Math.max(0, p - 1))}
+                      disabled={projectPage === 0}
+                      className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)] disabled:opacity-40"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setProjectPage((p) => Math.min(courseProjects.length - 1, p + 1))}
+                      disabled={projectPage === courseProjects.length - 1}
+                      className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)] disabled:opacity-40"
+                    >
+                      Next
+                    </button>
                   </div>
-                  <p className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-                    {projectPage + 1} / {courseProjects.length}
-                  </p>
-                </section>
+                </article>
+              </div>
+            </section>
 
-                <section className="grid gap-4 border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 sm:grid-cols-3">
-                  <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-                    <strong>style key:</strong> {activePattern}
-                  </p>
-                  <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-                    <strong>css file:</strong> {CARD_STYLE_REGISTRY[activePattern].cssFile}
-                  </p>
-                  <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-                    <strong>component:</strong> {CARD_STYLE_REGISTRY[activePattern].component}
-                  </p>
-                </section>
-
-                <CardRenderer
-                  styleKey={activePattern}
-                  projectTitle={activeProject.tabName || activeProject.projectName}
-                  items={mappedItems}
-                  density={activeDensity}
-                  accentTheme={activeAccentTheme}
-                  mediaPriority={activeMediaPriority}
-                />
-
-                <div className="flex items-center justify-between border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-                  <button
-                    onClick={() => setProjectPage((p) => Math.max(0, p - 1))}
-                    disabled={projectPage === 0}
-                    className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)] disabled:opacity-40"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setProjectPage((p) => Math.min(courseProjects.length - 1, p + 1))}
-                    disabled={projectPage === courseProjects.length - 1}
-                    className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)] disabled:opacity-40"
-                  >
-                    Next
-                  </button>
+            <section className="mt-16">
+              <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Works List</p>
+              <h3 className="mt-2 text-[var(--type-h3)] leading-[1.4] font-medium">Selected Works</h3>
+              <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
+              <div className="mt-6 grid gap-6 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <CardRenderer
+                    styleKey={activePattern}
+                    projectTitle={activeProject.tabName || activeProject.projectName}
+                    items={mappedItems}
+                    density={activeDensity}
+                    accentTheme={activeAccentTheme}
+                    mediaPriority={activeMediaPriority}
+                  />
                 </div>
-              </>
-            ) : null}
-          </section>
+                <details className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 md:col-span-2">
+                  <summary className="cursor-pointer text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+                    Debug Info
+                  </summary>
+                  <div className="mt-6 grid gap-4 text-[var(--type-micro)] leading-[1.5] text-[var(--color-text-secondary)] sm:grid-cols-3">
+                    <p><strong>style key:</strong> {activePattern}</p>
+                    <p><strong>css file:</strong> {CARD_STYLE_REGISTRY[activePattern].cssFile}</p>
+                    <p><strong>component:</strong> {CARD_STYLE_REGISTRY[activePattern].component}</p>
+                  </div>
+                </details>
+              </div>
+            </section>
+          </>
         ) : (
           <section className="mt-16 border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 text-center text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
             No published projects linked to this course.
