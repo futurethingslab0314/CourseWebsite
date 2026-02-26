@@ -431,17 +431,34 @@ app.post('/api/admin/sync-course-links', async (req, res) => {
   }
 });
 
-app.post('/api/admin/sync-course-link', async (req, res) => {
+app.all('/api/admin/sync-course-link', async (req, res) => {
   if (courseLinkSyncSecret) {
-    const incomingSecret = req.get('x-sync-secret') || req.body?.secret;
+    const incomingSecret = req.get('x-sync-secret') || req.body?.secret || req.query?.secret;
     if (incomingSecret !== courseLinkSyncSecret) {
       return res.status(401).json({ error: 'Unauthorized sync request' });
     }
   }
 
-  const baseUrl = req.body?.baseUrl || siteBaseUrl;
-  const coursePageId = req.body?.coursePageId || req.body?.pageId || req.query?.pageId;
-  const slug = req.body?.slug || req.query?.slug;
+  const body = req.body || {};
+  const query = req.query || {};
+  const baseUrl = body.baseUrl || query.baseUrl || siteBaseUrl;
+  const coursePageId =
+    body.coursePageId ||
+    body.pageId ||
+    body.page_id ||
+    body.id ||
+    query.coursePageId ||
+    query.pageId ||
+    query.page_id ||
+    query.id;
+  const slug = body.slug || query.slug;
+
+  if (!coursePageId && !slug) {
+    return res.status(400).json({
+      error: 'Missing target course identifier',
+      detail: 'Provide coursePageId/pageId/id or slug in webhook body/query.'
+    });
+  }
 
   try {
     const result = await syncSingleCourseLink({ baseUrl, coursePageId, slug });
