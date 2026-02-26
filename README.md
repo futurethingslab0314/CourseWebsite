@@ -34,7 +34,7 @@ Set these variables in Railway:
 - `GET /api/source-database/:databaseId`: fetches schema + rows for each project `SourceDatabaseId`
 - `POST /api/admin/sync-course-links`: manually trigger `CourseLink` write-back (header `x-sync-secret` if configured)
 - `POST /api/admin/sync-course-link`: manually trigger one course `CourseLink` write-back by `coursePageId` or `slug`
-- `POST /api/admin/sync-project-mappings`: analyze source DB schema and write back `FieldMapping` + `UiPattern` to Projects DB (`projectPageId` optional)
+- `ALL /api/admin/sync-project-mappings`: analyze source DB schema and write back `FieldMapping` + `UiPattern` to Projects DB (`projectPageId` optional)
 
 The frontend then resolves:
 `Courses -> Projects -> SourceDatabaseId -> /courses/[slug]`
@@ -84,6 +84,12 @@ You can also add a button in Projects DB to analyze this project source DB and w
 This will update the clicked project row:
 - `FieldMapping` (JSON string)
 - `UiPattern` (`gallery-story` / `color-swatch` / `link-cards` / `generic-cards`)
+
+Tips:
+- If your `UiPattern` property is `select`, add these options in Notion first:
+  `gallery-story`, `color-swatch`, `link-cards`, `generic-cards`
+- Default sync includes unpublished projects. You can restrict via:
+  `?includeUnpublished=false`
 
 ## Railway Deploy
 

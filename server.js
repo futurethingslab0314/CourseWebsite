@@ -274,6 +274,8 @@ const findPropNameInSchema = (dbProperties = {}, candidates = []) => {
   return null;
 };
 
+const isWritablePropType = (propType) => ['url', 'title', 'select', 'status', 'rich_text'].includes(propType);
+
 const buildPropertyPayloadByType = (propType, value) => {
   if (propType === 'url') return { url: value };
   if (propType === 'title') {
@@ -375,7 +377,7 @@ const syncCourseLinks = async (baseUrl) => {
   return { updated, skipped, total: pages.length };
 };
 
-const syncProjectMappings = async ({ projectPageId } = {}) => {
+const syncProjectMappings = async ({ projectPageId, includeUnpublished = true } = {}) => {
   if (!notionApiKey) throw new Error('Missing env var: NOTION_API_KEY');
   if (!projectsDatabaseId) throw new Error('Missing env var: NOTION_DATABASE_ID_THEME_2 (Projects DB)');
 
@@ -390,6 +392,13 @@ const syncProjectMappings = async ({ projectPageId } = {}) => {
   const fieldMappingPropType = fieldMappingPropName ? projectDbProps[fieldMappingPropName]?.type : null;
   const uiPatternPropType = uiPatternPropName ? projectDbProps[uiPatternPropName]?.type : null;
 
+  if (fieldMappingPropName && fieldMappingPropType && !isWritablePropType(fieldMappingPropType)) {
+    throw new Error(`FieldMapping property type "${fieldMappingPropType}" is not writable. Use rich_text/title/url/select/status.`);
+  }
+  if (uiPatternPropName && uiPatternPropType && !isWritablePropType(uiPatternPropType)) {
+    throw new Error(`UiPattern property type "${uiPatternPropType}" is not writable. Use rich_text/title/url/select/status.`);
+  }
+
   const pages = await queryAllNotionPages(projectsDatabaseId);
   const sourceDbCache = new Map();
   let updated = 0;
@@ -399,7 +408,7 @@ const syncProjectMappings = async ({ projectPageId } = {}) => {
 
   for (const page of pages) {
     if (projectPageId && normalizeNotionId(page.id) !== normalizeNotionId(projectPageId)) continue;
-    if (!hasPublishedStatus(page.properties)) {
+    if (!includeUnpublished && !hasPublishedStatus(page.properties)) {
       skipped += 1;
       continue;
     }
@@ -432,6 +441,19 @@ const syncProjectMappings = async ({ projectPageId } = {}) => {
       if (uiPatternPropName && uiPatternPropType) {
         const current = propText(page.properties?.[uiPatternPropName] || '').trim();
         if (current !== analyzed.uiPattern) {
+          if (uiPatternPropType === 'select') {
+            const options = projectDbProps?.[uiPatternPropName]?.select?.options || [];
+            const hasOption = options.some((opt) => opt?.name === analyzed.uiPattern);
+            if (!hasOption) {
+              failed += 1;
+              failures.push({
+                projectId: page.id,
+                sourceDatabaseId: project.sourceDatabaseId,
+                reason: `UiPattern select missing option "${analyzed.uiPattern}" in Notion property "${uiPatternPropName}"`
+              });
+              continue;
+            }
+          }
           payload[uiPatternPropName] = buildPropertyPayloadByType(uiPatternPropType, analyzed.uiPattern);
         }
       }
@@ -696,7 +718,7 @@ app.all('/api/admin/sync-course-link', async (req, res) => {
   }
 });
 
-app.post('/api/admin/sync-project-mappings', async (req, res) => {
+app.all('/api/admin/sync-project-mappings', async (req, res) => {
   if (courseLinkSyncSecret) {
     const incomingSecret = req.get('x-sync-secret') || req.body?.secret || req.query?.secret;
     if (incomingSecret !== courseLinkSyncSecret) {
@@ -704,10 +726,15 @@ app.post('/api/admin/sync-project-mappings', async (req, res) => {
     }
   }
 
-  const projectPageId = req.body?.projectPageId || req.body?.pageId || req.query?.projectPageId || req.query?.pageId;
+  const body = req.body || {};
+  const query = req.query || {};
+  const projectPageId = body.projectPageId || body.pageId || body.id || query.projectPageId || query.pageId || query.id;
+  const includeUnpublishedRaw = body.includeUnpublished ?? query.includeUnpublished;
+  const includeUnpublished =
+    includeUnpublishedRaw === undefined ? true : String(includeUnpublishedRaw).toLowerCase() === 'true';
 
   try {
-    const result = await syncProjectMappings({ projectPageId });
+    const result = await syncProjectMappings({ projectPageId, includeUnpublished });
     return res.json({ ok: true, ...result });
   } catch (error) {
     return res.status(500).json({
