@@ -2,17 +2,17 @@
   --card-bg: var(--color-bg-surface);
   --card-border: var(--color-border-subtle);
   --card-radius: var(--radius-xl);
-  --card-padding: var(--space-5);
-  --card-gap: var(--grid-gap-md);
+  --card-padding: 1.5rem;
+  --card-gap: 1rem;
   --card-title-size: var(--type-h3);
-  --card-shadow: var(--shadow-sm);
+  --card-shadow: none;
 
   border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
   padding: var(--card-padding);
   background: var(--card-bg);
   box-shadow: var(--card-shadow);
-  transition: box-shadow var(--motion-base) var(--ease-emphasis), border-color var(--motion-base) var(--ease-emphasis);
+  transition: border-color var(--motion-base) var(--ease-emphasis);
 }
 
 .card__list {
@@ -22,19 +22,12 @@
 
 .card__item {
   display: grid;
-  gap: var(--space-2);
+  gap: 1rem;
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
   background: var(--color-white);
-  padding: var(--space-4);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--motion-base) var(--ease-emphasis), box-shadow var(--motion-base) var(--ease-emphasis), border-color var(--motion-base) var(--ease-emphasis);
-}
-
-.card__item:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-gray-300);
-  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  transition: border-color var(--motion-base) var(--ease-emphasis);
 }
 
 .card__title {

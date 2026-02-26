@@ -103,16 +103,16 @@ const resolveMediaPriority = (project: Project | undefined, course: Course | nul
 
 const AppFrame: React.FC<{ children: React.ReactNode; onHome: () => void; homeEnabled: boolean }> = ({ children, onHome, homeEnabled }) => (
   <main className="min-h-screen bg-[var(--color-bg-canvas)] text-[var(--color-text-primary)]">
-    <header className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/85 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[var(--container-max)] items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
+    <header className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
+      <div className="mx-auto flex w-full max-w-[var(--container-max)] items-center justify-between px-4 py-4">
         <button
           onClick={onHome}
           disabled={!homeEnabled}
-          className="text-left font-['Space_Grotesk'] text-[var(--type-h3)] font-semibold tracking-[var(--tracking-tight)] disabled:cursor-default disabled:opacity-100"
+          className="text-left text-[var(--type-h3)] leading-[1.4] font-medium tracking-[var(--tracking-tight)] disabled:cursor-default disabled:opacity-100"
         >
           Back To Design Course List
         </button>
-        <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+        <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
           Course Showcase
         </p>
       </div>
@@ -120,8 +120,8 @@ const AppFrame: React.FC<{ children: React.ReactNode; onHome: () => void; homeEn
 
     {children}
 
-    <footer className="mt-14 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
-      <div className="mx-auto flex w-full max-w-[var(--container-max)] flex-col gap-2 px-5 py-6 text-[var(--type-micro)] text-[var(--color-text-secondary)] sm:px-8 lg:px-12">
+    <footer className="mt-16 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
+      <div className="mx-auto flex w-full max-w-[var(--container-max)] flex-col gap-4 px-4 py-6 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
         <p>National Taiwan University of Science and Technology / Design Department</p>
         <p>Lecture by Assistant Prof. Yu-Ting Cheng</p>
       </div>
@@ -224,7 +224,7 @@ const App: React.FC = () => {
   if (loading) {
     return (
       <AppFrame onHome={goHome} homeEnabled={false}>
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-20 text-center text-[var(--type-body)] text-[var(--color-text-secondary)] sm:px-8 lg:px-12">
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16 text-center text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
           Loading course data...
         </div>
       </AppFrame>
@@ -234,7 +234,7 @@ const App: React.FC = () => {
   if (error) {
     return (
       <AppFrame onHome={goHome} homeEnabled={Boolean(activeSlug)}>
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-20 text-center text-[var(--type-body)] text-red-700 sm:px-8 lg:px-12">Error: {error}</div>
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16 text-center text-[var(--type-body)] leading-[1.5] text-[var(--color-text-primary)]">Error: {error}</div>
       </AppFrame>
     );
   }
@@ -242,29 +242,29 @@ const App: React.FC = () => {
   if (!activeSlug) {
     return (
       <AppFrame onHome={goHome} homeEnabled={false}>
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-10 sm:px-8 lg:px-12">
-          <section className="rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-7 shadow-[var(--shadow-md)] sm:p-10">
-            <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Course Website</p>
-            <h1 className="mt-2 font-['Space_Grotesk'] text-[var(--type-display)] font-bold leading-[1.05]">TemplateA Course Index</h1>
-            <p className="mt-4 max-w-3xl text-[var(--type-body)] text-[var(--color-text-secondary)]">
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16">
+          <section className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
+            <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Course Website</p>
+            <h1 className="mt-4 text-[var(--type-h1)] leading-[1.2] font-medium">TemplateA Course Index</h1>
+            <p className="mt-4 max-w-3xl text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
               The whole website now follows one fixed visual system. Assignment projects change only through content pattern modules.
             </p>
-            <a href="/style-playground" className="mt-4 inline-block rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-4 py-2 text-[var(--type-caption)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-primary)] hover:text-[var(--color-text-primary)]">
+            <a href="/style-playground" className="mt-4 inline-block border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)] hover:border-[var(--color-text-primary)] hover:text-[var(--color-text-primary)]">
               Open Style Playground
             </a>
           </section>
 
-          <section className="mt-[var(--space-10)] grid gap-[var(--grid-gap-md)] md:grid-cols-2">
+          <section className="mt-16 grid gap-10 md:grid-cols-2">
             {courses.map((course) => (
-              <article key={course.id} className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)]">
+              <article key={course.id} className="overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
                 {course.coverImage ? <img src={course.coverImage} alt={course.courseName} className="h-52 w-full object-cover" /> : null}
-                <div className="p-5 sm:p-6">
-                  <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">/{course.slug}</p>
-                  <h2 className="mt-1 font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold">{course.courseName}</h2>
-                  <p className="mt-2 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{course.courseSummary || 'No summary provided.'}</p>
+                <div className="p-6">
+                  <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">/{course.slug}</p>
+                  <h2 className="mt-4 text-[var(--type-h2)] leading-[1.2857] font-medium">{course.courseName}</h2>
+                  <p className="mt-4 text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">{course.courseSummary || 'No summary provided.'}</p>
                   <button
                     onClick={() => goToCourse(course.slug)}
-                    className="mt-5 rounded-[var(--radius-md)] bg-[var(--color-accent-theme-1)] px-4 py-2 text-[var(--type-caption)] font-medium text-white hover:opacity-90"
+                    className="mt-4 border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-body)] leading-[1.5] text-[var(--color-text-primary)] hover:border-[var(--color-text-primary)]"
                   >
                     Open course
                   </button>
@@ -280,9 +280,9 @@ const App: React.FC = () => {
   if (!currentCourse) {
     return (
       <AppFrame onHome={goHome} homeEnabled={true}>
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-16 sm:px-8 lg:px-12">
-          <p className="text-[var(--type-body)] text-[var(--color-text-secondary)]">Course not found: /courses/{activeSlug}</p>
-          <button onClick={goHome} className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] px-4 py-2 text-[var(--type-caption)]">Back home</button>
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16">
+          <p className="text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">Course not found: /courses/{activeSlug}</p>
+          <button onClick={goHome} className="mt-4 border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-body)] leading-[1.5]">Back home</button>
         </div>
       </AppFrame>
     );
@@ -299,29 +299,29 @@ const App: React.FC = () => {
 
   return (
     <AppFrame onHome={goHome} homeEnabled={true}>
-      <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-8 sm:px-8 lg:px-12">
-        <section className="overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-md)]">
+      <div className="mx-auto w-full max-w-[var(--container-max)] px-4 py-16">
+        <section className="overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
           {currentCourse.coverImage ? <img src={currentCourse.coverImage} alt={currentCourse.courseName} className="h-56 w-full object-cover md:h-72" /> : null}
-          <div className="p-6 sm:p-8">
-            <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Course Overview</p>
-            <h1 className="mt-2 font-['Space_Grotesk'] text-[var(--type-h1)] font-bold leading-tight">{currentCourse.courseName}</h1>
-            <p className="mt-3 max-w-4xl text-[var(--type-body)] text-[var(--color-text-secondary)]">{currentCourse.courseSummary || 'No summary provided.'}</p>
+          <div className="p-6">
+            <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Course Overview</p>
+            <h1 className="mt-4 text-[var(--type-h1)] leading-[1.2] font-medium">{currentCourse.courseName}</h1>
+            <p className="mt-4 max-w-4xl text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">{currentCourse.courseSummary || 'No summary provided.'}</p>
           </div>
         </section>
 
         {courseProjects.length > 0 ? (
-          <section className="mt-7 space-y-4">
-            <div className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-3 sm:p-4">
-              <div className="flex flex-wrap gap-2">
+          <section className="mt-16 space-y-10">
+            <div className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
+              <div className="flex flex-wrap gap-4">
                 {courseProjects.map((project, idx) => {
                   const isActive = idx === projectPage;
                   return (
                     <button
                       key={project.id}
                       onClick={() => setProjectPage(idx)}
-                      className={`rounded-[var(--radius-sm)] border px-3 py-1.5 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] transition-all ${isActive
+                      className={`border px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] transition-all ${isActive
                           ? 'border-[var(--color-text-primary)] bg-[var(--color-text-primary)] text-white'
-                          : 'border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)]'
+                          : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-primary)] hover:text-[var(--color-text-primary)]'
                         }`}
                     >
                       {project.tabName || `Project ${idx + 1}`}
@@ -333,26 +333,26 @@ const App: React.FC = () => {
 
             {activeProject ? (
               <>
-                <section className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-5 py-4">
+                <section className="flex flex-wrap items-start justify-between gap-4 border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
                   <div>
-                    <h2 className="font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold">{activeProject.tabName || activeProject.projectName}</h2>
-                    <p className="mt-1 text-[var(--type-caption)] text-[var(--color-text-secondary)]">
+                    <h2 className="text-[var(--type-h2)] leading-[1.2857] font-medium">{activeProject.tabName || activeProject.projectName}</h2>
+                    <p className="mt-4 text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
                       {activeProject.projectDescription || 'No project description provided.'}
                     </p>
                   </div>
-                  <p className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-3 py-1 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+                  <p className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
                     {projectPage + 1} / {courseProjects.length}
                   </p>
                 </section>
 
-                <section className="grid gap-3 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-3 sm:grid-cols-3 sm:p-4">
-                  <p className="text-[var(--type-micro)] text-[var(--color-text-secondary)]">
+                <section className="grid gap-4 border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 sm:grid-cols-3">
+                  <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
                     <strong>style key:</strong> {activePattern}
                   </p>
-                  <p className="text-[var(--type-micro)] text-[var(--color-text-secondary)]">
+                  <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
                     <strong>css file:</strong> {CARD_STYLE_REGISTRY[activePattern].cssFile}
                   </p>
-                  <p className="text-[var(--type-micro)] text-[var(--color-text-secondary)]">
+                  <p className="text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
                     <strong>component:</strong> {CARD_STYLE_REGISTRY[activePattern].component}
                   </p>
                 </section>
@@ -366,18 +366,18 @@ const App: React.FC = () => {
                   mediaPriority={activeMediaPriority}
                 />
 
-                <div className="flex items-center justify-between rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-3 sm:p-4">
+                <div className="flex items-center justify-between border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
                   <button
                     onClick={() => setProjectPage((p) => Math.max(0, p - 1))}
                     disabled={projectPage === 0}
-                    className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-4 py-2 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] disabled:opacity-40"
+                    className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)] disabled:opacity-40"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setProjectPage((p) => Math.min(courseProjects.length - 1, p + 1))}
                     disabled={projectPage === courseProjects.length - 1}
-                    className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-4 py-2 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] disabled:opacity-40"
+                    className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)] disabled:opacity-40"
                   >
                     Next
                   </button>
@@ -386,7 +386,7 @@ const App: React.FC = () => {
             ) : null}
           </section>
         ) : (
-          <section className="mt-7 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-8 text-center text-[var(--type-body)] text-[var(--color-text-secondary)]">
+          <section className="mt-16 border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 text-center text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
             No published projects linked to this course.
           </section>
         )}

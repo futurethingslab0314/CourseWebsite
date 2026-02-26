@@ -4,7 +4,7 @@
     --border-width-medium: 2px;
     --border-width-thick: 4px;
 
-    --border-color-subtle: var(--color-gray-100);
+    --border-color-subtle: #e5e5e5;
     --border-color-soft: var(--color-gray-50);
     --border-color-default: var(--color-gray-200);
     --border-color-strong: var(--color-gray-300);

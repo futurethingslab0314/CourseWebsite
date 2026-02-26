@@ -25,7 +25,7 @@
 
   --tracking-tight: -0.01em;
   --tracking-normal: 0;
-  --tracking-wide: 0.08em;
+  --tracking-wide: 0.12em;
   --tracking-wider: 0.2em;
   --tracking-widest: 0.3em;
   --tracking-ultra: 0.4em;
@@ -34,11 +34,11 @@
   --font-body: var(--font-family-base);
   --font-mono: var(--font-family-mono);
 
-  --type-display: clamp(2rem, 3vw, 3.4rem);
-  --type-h1: clamp(1.7rem, 2.4vw, 2.6rem);
-  --type-h2: clamp(1.25rem, 1.9vw, 1.8rem);
-  --type-h3: 1.05rem;
+  --type-display: 2.5rem;
+  --type-h1: 2.5rem;
+  --type-h2: 1.75rem;
+  --type-h3: 1.25rem;
   --type-body: var(--font-size-16);
-  --type-caption: var(--font-size-14);
+  --type-caption: var(--font-size-16);
   --type-micro: var(--font-size-12);
 }

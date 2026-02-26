@@ -17,16 +17,9 @@
 .card--color-swatch .color-swatch__chip {
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-3);
+  padding: 1rem;
   background: var(--color-white);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--motion-base) var(--ease-emphasis), box-shadow var(--motion-base) var(--ease-emphasis), border-color var(--motion-base) var(--ease-emphasis);
-}
-
-.card--color-swatch .color-swatch__chip:hover {
-  transform: translateY(-1px);
-  border-color: var(--color-gray-300);
-  box-shadow: var(--shadow-md);
+  transition: border-color var(--motion-base) var(--ease-emphasis);
 }
 
 .card--color-swatch .color-swatch__preview {
@@ -38,10 +31,10 @@
 .card--color-swatch .color-swatch__panel {
   border-radius: var(--radius-md);
   background: var(--color-bg-canvas);
-  padding: var(--space-4);
+  padding: 1rem;
   border: 1px solid var(--color-border-subtle);
   display: grid;
-  gap: var(--space-4);
+  gap: 1rem;
 }
 
 @media (max-width: 900px) {

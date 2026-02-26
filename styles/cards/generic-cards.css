@@ -4,10 +4,10 @@
 }
 
 .card--generic-cards .generic-cards__meta {
-  margin-top: var(--space-3);
+  margin-top: 1rem;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 1rem;
   align-items: center;
 }
 
@@ -17,12 +17,7 @@
   object-fit: cover;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border-subtle);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--motion-base) var(--ease-emphasis);
-}
-
-.card--generic-cards .generic-cards__thumb:hover {
-  transform: scale(1.03);
+  transition: border-color var(--motion-base) var(--ease-emphasis);
 }
 
 .card--generic-cards .generic-cards__link {
@@ -34,10 +29,10 @@
 .card--generic-cards .generic-cards__swatch {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 1rem;
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-2);
+  padding: 1rem;
   font-size: var(--type-micro);
 }
 
