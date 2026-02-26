@@ -28,11 +28,12 @@
   text-decoration: none;
   color: var(--pattern-accent, var(--color-accent-theme-1));
   padding: var(--space-2) var(--space-3);
-  transition: border-color var(--motion-base) var(--ease-emphasis);
+  transition: border-color var(--motion-base) var(--ease-emphasis), background-color var(--motion-base) var(--ease-emphasis), color var(--motion-base) var(--ease-emphasis);
 }
 
 .card--link-cards .link-cards__cta:hover {
   border-color: var(--pattern-accent, var(--color-accent-theme-1));
+  background: var(--color-blue-50);
 }
 
 @media (max-width: 1100px) {
