@@ -35,6 +35,8 @@ Set these variables in Railway:
 - `POST /api/admin/sync-course-links`: manually trigger `CourseLink` write-back (header `x-sync-secret` if configured)
 - `POST /api/admin/sync-course-link`: manually trigger one course `CourseLink` write-back by `coursePageId` or `slug`
 - `ALL /api/admin/sync-project-mappings`: analyze source DB schema and write back `FieldMapping` + `UiPattern` to Projects DB (`projectPageId` optional)
+  - Default: manual-first (only fills when fields are empty)
+  - Force overwrite: add `overwrite=true`
 
 The frontend then resolves:
 `Courses -> Projects -> SourceDatabaseId -> /courses/[slug]`
@@ -90,6 +92,8 @@ Tips:
   `gallery-story`, `color-swatch`, `link-cards`, `generic-cards`
 - Default sync includes unpublished projects. You can restrict via:
   `?includeUnpublished=false`
+- To force replace your manual values, use:
+  `?overwrite=true`
 
 ## Railway Deploy
 

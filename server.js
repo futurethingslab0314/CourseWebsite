@@ -377,7 +377,7 @@ const syncCourseLinks = async (baseUrl) => {
   return { updated, skipped, total: pages.length };
 };
 
-const syncProjectMappings = async ({ projectPageId, includeUnpublished = true } = {}) => {
+const syncProjectMappings = async ({ projectPageId, includeUnpublished = true, overwrite = false } = {}) => {
   if (!notionApiKey) throw new Error('Missing env var: NOTION_API_KEY');
   if (!projectsDatabaseId) throw new Error('Missing env var: NOTION_DATABASE_ID_THEME_2 (Projects DB)');
 
@@ -433,14 +433,16 @@ const syncProjectMappings = async ({ projectPageId, includeUnpublished = true } 
 
       if (fieldMappingPropName && fieldMappingPropType) {
         const current = propText(page.properties?.[fieldMappingPropName] || '').trim();
-        if (current !== mappingJson) {
+        const shouldWriteFieldMapping = overwrite ? current !== mappingJson : current.length === 0;
+        if (shouldWriteFieldMapping) {
           payload[fieldMappingPropName] = buildPropertyPayloadByType(fieldMappingPropType, mappingJson);
         }
       }
 
       if (uiPatternPropName && uiPatternPropType) {
         const current = propText(page.properties?.[uiPatternPropName] || '').trim();
-        if (current !== analyzed.uiPattern) {
+        const shouldWriteUiPattern = overwrite ? current !== analyzed.uiPattern : current.length === 0;
+        if (shouldWriteUiPattern) {
           if (uiPatternPropType === 'select') {
             const options = projectDbProps?.[uiPatternPropName]?.select?.options || [];
             const hasOption = options.some((opt) => opt?.name === analyzed.uiPattern);
@@ -732,9 +734,11 @@ app.all('/api/admin/sync-project-mappings', async (req, res) => {
   const includeUnpublishedRaw = body.includeUnpublished ?? query.includeUnpublished;
   const includeUnpublished =
     includeUnpublishedRaw === undefined ? true : String(includeUnpublishedRaw).toLowerCase() === 'true';
+  const overwriteRaw = body.overwrite ?? query.overwrite;
+  const overwrite = overwriteRaw === undefined ? false : String(overwriteRaw).toLowerCase() === 'true';
 
   try {
-    const result = await syncProjectMappings({ projectPageId, includeUnpublished });
+    const result = await syncProjectMappings({ projectPageId, includeUnpublished, overwrite });
     return res.json({ ok: true, ...result });
   } catch (error) {
     return res.status(500).json({
