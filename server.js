@@ -495,6 +495,168 @@ const syncProjectMappings = async ({ projectPageId, includeUnpublished = true, o
   };
 };
 
+const syncCourseStyleControls = async ({ coursePageId, slug, includeUnpublished = true, overwrite = false } = {}) => {
+  if (!notionApiKey) throw new Error('Missing env var: NOTION_API_KEY');
+  if (!coursesDatabaseId) throw new Error('Missing env var: NOTION_DATABASE_ID_THEME_1 (Courses DB)');
+  if (!projectsDatabaseId) throw new Error('Missing env var: NOTION_DATABASE_ID_THEME_2 (Projects DB)');
+
+  const projectDb = await retrieveNotionDatabase(projectsDatabaseId);
+  const projectDbProps = projectDb?.properties || {};
+  const densityPropName = findPropNameInSchema(projectDbProps, ['Density', 'density']);
+  const accentThemePropName = findPropNameInSchema(projectDbProps, ['AccentTheme', 'Accent Theme', 'accentTheme']);
+  const mediaPriorityPropName = findPropNameInSchema(projectDbProps, ['MediaPriority', 'Media Priority', 'mediaPriority']);
+
+  if (!densityPropName && !accentThemePropName && !mediaPriorityPropName) {
+    throw new Error('Projects DB missing style control properties (Density / AccentTheme / MediaPriority)');
+  }
+
+  const densityPropType = densityPropName ? projectDbProps[densityPropName]?.type : null;
+  const accentThemePropType = accentThemePropName ? projectDbProps[accentThemePropName]?.type : null;
+  const mediaPriorityPropType = mediaPriorityPropName ? projectDbProps[mediaPriorityPropName]?.type : null;
+
+  if (densityPropName && densityPropType && !isWritablePropType(densityPropType)) {
+    throw new Error(`Density property type "${densityPropType}" is not writable. Use rich_text/title/url/select/status.`);
+  }
+  if (accentThemePropName && accentThemePropType && !isWritablePropType(accentThemePropType)) {
+    throw new Error(`AccentTheme property type "${accentThemePropType}" is not writable. Use rich_text/title/url/select/status.`);
+  }
+  if (mediaPriorityPropName && mediaPriorityPropType && !isWritablePropType(mediaPriorityPropType)) {
+    throw new Error(`MediaPriority property type "${mediaPriorityPropType}" is not writable. Use rich_text/title/url/select/status.`);
+  }
+
+  const [coursePages, projectPages] = await Promise.all([
+    queryAllNotionPages(coursesDatabaseId),
+    queryAllNotionPages(projectsDatabaseId)
+  ]);
+
+  const targetCourses = coursePages.filter((page) => {
+    if (coursePageId) return normalizeNotionId(page.id) === normalizeNotionId(coursePageId);
+    if (slug) return normalizeCourse(page).slug.toLowerCase() === slug.toLowerCase();
+    return true;
+  });
+
+  if ((coursePageId || slug) && targetCourses.length === 0) {
+    throw new Error('Target course not found in Courses database');
+  }
+
+  const normalizedProjects = projectPages.map((page) => ({ page, project: normalizeProject(page) }));
+  let updated = 0;
+  let skipped = 0;
+  let failed = 0;
+  let matchedProjects = 0;
+  const failures = [];
+
+  for (const coursePage of targetCourses) {
+    if (!includeUnpublished && !hasPublishedStatus(coursePage.properties)) {
+      skipped += 1;
+      continue;
+    }
+
+    const course = normalizeCourse(coursePage);
+    const controls = {
+      density: course.density || '',
+      accentTheme: course.accentTheme || '',
+      mediaPriority: course.mediaPriority || ''
+    };
+    const hasAnyControl = controls.density || controls.accentTheme || controls.mediaPriority;
+    if (!hasAnyControl) {
+      skipped += 1;
+      continue;
+    }
+
+    const courseId = normalizeNotionId(course.id);
+    const relatedProjectIds = new Set((course.projectIds || []).map((id) => normalizeNotionId(id)));
+
+    for (const entry of normalizedProjects) {
+      const page = entry.page;
+      const project = entry.project;
+      const projectId = normalizeNotionId(project.id);
+      const linkedByCourse = (project.courseIds || []).some((id) => normalizeNotionId(id) === courseId);
+      const linkedByProject = relatedProjectIds.has(projectId);
+      if (!linkedByCourse && !linkedByProject) continue;
+      if (!includeUnpublished && !hasPublishedStatus(page.properties)) {
+        skipped += 1;
+        continue;
+      }
+
+      matchedProjects += 1;
+      const payload = {};
+
+      try {
+        if (controls.density && densityPropName && densityPropType) {
+          const current = propText(page.properties?.[densityPropName] || '').trim().toLowerCase();
+          const shouldWrite = overwrite ? current !== controls.density : current.length === 0;
+          if (shouldWrite) {
+            if (densityPropType === 'select') {
+              const options = projectDbProps?.[densityPropName]?.select?.options || [];
+              const hasOption = options.some((opt) => opt?.name === controls.density);
+              if (!hasOption) {
+                throw new Error(`Density select missing option "${controls.density}" in property "${densityPropName}"`);
+              }
+            }
+            payload[densityPropName] = buildPropertyPayloadByType(densityPropType, controls.density);
+          }
+        }
+
+        if (controls.accentTheme && accentThemePropName && accentThemePropType) {
+          const current = propText(page.properties?.[accentThemePropName] || '').trim().toLowerCase();
+          const shouldWrite = overwrite ? current !== controls.accentTheme : current.length === 0;
+          if (shouldWrite) {
+            if (accentThemePropType === 'select') {
+              const options = projectDbProps?.[accentThemePropName]?.select?.options || [];
+              const hasOption = options.some((opt) => opt?.name === controls.accentTheme);
+              if (!hasOption) {
+                throw new Error(`AccentTheme select missing option "${controls.accentTheme}" in property "${accentThemePropName}"`);
+              }
+            }
+            payload[accentThemePropName] = buildPropertyPayloadByType(accentThemePropType, controls.accentTheme);
+          }
+        }
+
+        if (controls.mediaPriority && mediaPriorityPropName && mediaPriorityPropType) {
+          const current = propText(page.properties?.[mediaPriorityPropName] || '').trim().toLowerCase();
+          const shouldWrite = overwrite ? current !== controls.mediaPriority : current.length === 0;
+          if (shouldWrite) {
+            if (mediaPriorityPropType === 'select') {
+              const options = projectDbProps?.[mediaPriorityPropName]?.select?.options || [];
+              const hasOption = options.some((opt) => opt?.name === controls.mediaPriority);
+              if (!hasOption) {
+                throw new Error(`MediaPriority select missing option "${controls.mediaPriority}" in property "${mediaPriorityPropName}"`);
+              }
+            }
+            payload[mediaPriorityPropName] = buildPropertyPayloadByType(mediaPriorityPropType, controls.mediaPriority);
+          }
+        }
+
+        if (Object.keys(payload).length === 0) {
+          skipped += 1;
+          continue;
+        }
+
+        await updateNotionPage(page.id, { properties: payload });
+        updated += 1;
+      } catch (err) {
+        failed += 1;
+        failures.push({
+          courseId: course.id,
+          projectId: page.id,
+          reason: err instanceof Error ? err.message : 'Unknown error'
+        });
+      }
+    }
+  }
+
+  return {
+    updated,
+    skipped,
+    failed,
+    totalCourses: targetCourses.length,
+    totalProjects: projectPages.length,
+    matchedProjects,
+    failures
+  };
+};
+
 const syncSingleCourseLink = async ({ baseUrl, coursePageId, slug }) => {
   if (!notionApiKey) throw new Error('Missing env var: NOTION_API_KEY');
   if (!coursesDatabaseId) throw new Error('Missing env var: NOTION_DATABASE_ID_THEME_1 (Courses DB)');
@@ -761,6 +923,43 @@ app.all('/api/admin/sync-project-mappings', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       error: 'Failed to sync project mappings',
+      detail: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+app.all('/api/admin/sync-course-style-controls', async (req, res) => {
+  if (courseLinkSyncSecret) {
+    const incomingSecret = req.get('x-sync-secret') || req.body?.secret || req.query?.secret;
+    if (incomingSecret !== courseLinkSyncSecret) {
+      return res.status(401).json({ error: 'Unauthorized sync request' });
+    }
+  }
+
+  const body = req.body || {};
+  const query = req.query || {};
+  const coursePageId =
+    body.coursePageId ||
+    body.pageId ||
+    body.page_id ||
+    body.id ||
+    query.coursePageId ||
+    query.pageId ||
+    query.page_id ||
+    query.id;
+  const slug = body.slug || query.slug;
+  const includeUnpublishedRaw = body.includeUnpublished ?? query.includeUnpublished;
+  const includeUnpublished =
+    includeUnpublishedRaw === undefined ? true : String(includeUnpublishedRaw).toLowerCase() === 'true';
+  const overwriteRaw = body.overwrite ?? query.overwrite;
+  const overwrite = overwriteRaw === undefined ? false : String(overwriteRaw).toLowerCase() === 'true';
+
+  try {
+    const result = await syncCourseStyleControls({ coursePageId, slug, includeUnpublished, overwrite });
+    return res.json({ ok: true, ...result });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Failed to sync course style controls',
       detail: error instanceof Error ? error.message : 'Unknown error'
     });
   }

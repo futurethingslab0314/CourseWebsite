@@ -37,6 +37,10 @@ Set these variables in Railway:
 - `ALL /api/admin/sync-project-mappings`: analyze source DB schema and write back `FieldMapping` + `UiPattern` to Projects DB (`projectPageId` optional)
   - Default: manual-first (only fills when fields are empty)
   - Force overwrite: add `overwrite=true`
+- `ALL /api/admin/sync-course-style-controls`: sync `Density` + `AccentTheme` + `MediaPriority` from Courses DB to linked Projects DB
+  - Default: manual-first (only fills project fields when empty)
+  - Force overwrite: add `overwrite=true`
+  - Scope one course: pass `coursePageId` or `slug`
 
 The frontend then resolves:
 `Courses -> Projects -> SourceDatabaseId -> /courses/[slug]`
@@ -94,6 +98,22 @@ Tips:
   `?includeUnpublished=false`
 - To force replace your manual values, use:
   `?overwrite=true`
+
+## Notion Button (Course Style Controls)
+
+When you edit style controls in Courses DB and want to propagate to linked Projects DB:
+
+- URL: `https://your-domain.com/api/admin/sync-course-style-controls`
+- Method: `POST`
+- Header:
+  - `Content-Type: application/json`
+  - `x-sync-secret: <COURSE_LINK_SYNC_SECRET>` (if configured)
+- Body for one course:
+  - `{"coursePageId":"{{Page ID}}"}`
+
+Optional body fields:
+- `{"coursePageId":"{{Page ID}}","overwrite":true}` to overwrite existing project values
+- `{"slug":"{{Slug}}"}` to target by slug instead of page ID
 
 ## Railway Deploy
 
