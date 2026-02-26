@@ -7,8 +7,8 @@ export const CONFIG = {
   INSTRUCTOR_NAME: "dr. Yu-Ting Cheng",
   INSTRUCTOR_URL: "https://www.yuutdesign.com/",
   COPYRIGHT: "© 2024-present Data-Enabled Creative Design. All projects created by students.",
-  API_THEME_1: "https://notion-proxy-pi.vercel.app/api/notion?db=datagallery01",
-  API_THEME_2: "https://notion-proxy-pi.vercel.app/api/notion?db=datagallery02",
+  API_THEME_1: "/api/notion?theme=1",
+  API_THEME_2: "/api/notion?theme=2",
   
   // Specific distinct colors for the two main Themes
   THEME_STYLES: {
