@@ -12,6 +12,7 @@ Set these variables in Railway:
 - `NOTION_VERSION` (optional): default is `2022-06-28`
 - `PUBLIC_SITE_URL`: deployed site base URL (example: `https://your-domain.com`)
 - `ENABLE_COURSE_LINK_WRITEBACK`: set `true` to auto-sync `CourseLink` on server start (recommended in production)
+- `ENABLE_PROJECT_MAPPING_SYNC`: set `true` to auto-sync `FieldMapping` + `UiPattern` on server start
 - `COURSE_LINK_SYNC_SECRET` (optional): secret for manual sync endpoint
 - `PORT` (optional): Railway usually injects this automatically
 
@@ -33,6 +34,7 @@ Set these variables in Railway:
 - `GET /api/source-database/:databaseId`: fetches schema + rows for each project `SourceDatabaseId`
 - `POST /api/admin/sync-course-links`: manually trigger `CourseLink` write-back (header `x-sync-secret` if configured)
 - `POST /api/admin/sync-course-link`: manually trigger one course `CourseLink` write-back by `coursePageId` or `slug`
+- `POST /api/admin/sync-project-mappings`: analyze source DB schema and write back `FieldMapping` + `UiPattern` to Projects DB (`projectPageId` optional)
 
 The frontend then resolves:
 `Courses -> Projects -> SourceDatabaseId -> /courses/[slug]`
@@ -66,6 +68,22 @@ Example webhook config:
 
 Alternative by slug:
 - `{"slug":"{{Slug}}"}`
+
+## Notion Button (Project Mapping + UiPattern)
+
+You can also add a button in Projects DB to analyze this project source DB and write back:
+
+- URL: `https://your-domain.com/api/admin/sync-project-mappings`
+- Method: `POST`
+- Header:
+  - `Content-Type: application/json`
+  - `x-sync-secret: <COURSE_LINK_SYNC_SECRET>` (if configured)
+- Body:
+  - `{"projectPageId":"{{Page ID}}"}`
+
+This will update the clicked project row:
+- `FieldMapping` (JSON string)
+- `UiPattern` (`gallery-story` / `color-swatch` / `link-cards` / `generic-cards`)
 
 ## Railway Deploy
 

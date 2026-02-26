@@ -14,6 +14,7 @@ const coursesDatabaseId = process.env.NOTION_DATABASE_ID_THEME_1;
 const projectsDatabaseId = process.env.NOTION_DATABASE_ID_THEME_2;
 const siteBaseUrl = process.env.PUBLIC_SITE_URL || process.env.SITE_BASE_URL || '';
 const enableCourseLinkWriteback = (process.env.ENABLE_COURSE_LINK_WRITEBACK || '').toLowerCase() === 'true';
+const enableProjectMappingSync = (process.env.ENABLE_PROJECT_MAPPING_SYNC || '').toLowerCase() === 'true';
 const courseLinkSyncSecret = process.env.COURSE_LINK_SYNC_SECRET || '';
 
 const themeDatabaseMap = {
@@ -256,6 +257,80 @@ const buildCourseLinkPropPayload = (courseLinkPropType, url) => {
   return { url };
 };
 
+const findPropNameInSchema = (dbProperties = {}, candidates = []) => {
+  const names = Object.keys(dbProperties);
+  for (const candidate of candidates) {
+    const exact = names.find((name) => name === candidate);
+    if (exact) return exact;
+  }
+  for (const candidate of candidates) {
+    const insensitive = names.find((name) => name.toLowerCase() === candidate.toLowerCase());
+    if (insensitive) return insensitive;
+  }
+  for (const candidate of candidates) {
+    const fuzzy = names.find((name) => name.toLowerCase().includes(candidate.toLowerCase()));
+    if (fuzzy) return fuzzy;
+  }
+  return null;
+};
+
+const buildPropertyPayloadByType = (propType, value) => {
+  if (propType === 'url') return { url: value };
+  if (propType === 'title') {
+    return {
+      title: [{ type: 'text', text: { content: value } }]
+    };
+  }
+  if (propType === 'select') return { select: { name: value } };
+  if (propType === 'status') return { status: { name: value } };
+  return {
+    rich_text: [{ type: 'text', text: { content: value } }]
+  };
+};
+
+const pickByTypeAndName = (propsEntries, types = [], nameKeywords = []) => {
+  const filtered = propsEntries.filter(([_, prop]) => types.includes(prop?.type));
+  const named = filtered.find(([name]) => nameKeywords.some((kw) => name.toLowerCase().includes(kw)));
+  if (named) return named[0];
+  return filtered[0]?.[0] || '';
+};
+
+const analyzeSourceSchema = (dbProperties = {}) => {
+  const entries = Object.entries(dbProperties);
+  const titleProp = entries.find(([_, prop]) => prop?.type === 'title')?.[0] || '';
+  const fieldMapping = {};
+
+  const titleField = titleProp || pickByTypeAndName(entries, ['rich_text'], ['title', 'name', 'project', '作品']);
+  const textField = pickByTypeAndName(entries, ['rich_text'], ['intro', 'description', 'summary', 'story', 'content', 'text', '介紹', '描述']);
+  const linkField = pickByTypeAndName(entries, ['url', 'rich_text'], ['url', 'link', 'website', 'site', '連結']);
+  const colorField = pickByTypeAndName(entries, ['select', 'multi_select', 'rich_text'], ['color', 'palette', 'hex', '色']);
+
+  const fileFields = entries.filter(([_, prop]) => prop?.type === 'files').map(([name]) => name);
+  const galleryField =
+    fileFields.find((name) => ['gallery', 'images', 'photos', 'works', '圖集', '作品'].some((kw) => name.toLowerCase().includes(kw))) || '';
+  const imageField =
+    fileFields.find((name) => ['cover', 'main', 'hero', 'thumbnail', 'image', '封面', '主圖'].some((kw) => name.toLowerCase().includes(kw))) ||
+    fileFields[0] ||
+    '';
+
+  if (titleField) fieldMapping.title = titleField;
+  if (textField) fieldMapping.text = textField;
+  if (galleryField) fieldMapping.gallery = galleryField;
+  if (imageField) fieldMapping.image = imageField;
+  if (linkField) fieldMapping.link = linkField;
+  if (colorField) fieldMapping.color = colorField;
+
+  let uiPattern = 'generic-cards';
+  if (fieldMapping.gallery) uiPattern = 'gallery-story';
+  else if (fieldMapping.color) uiPattern = 'color-swatch';
+  else if (fieldMapping.link) uiPattern = 'link-cards';
+
+  return {
+    fieldMapping,
+    uiPattern
+  };
+};
+
 const syncCourseLinks = async (baseUrl) => {
   if (!notionApiKey) throw new Error('Missing env var: NOTION_API_KEY');
   if (!coursesDatabaseId) throw new Error('Missing env var: NOTION_DATABASE_ID_THEME_1 (Courses DB)');
@@ -298,6 +373,93 @@ const syncCourseLinks = async (baseUrl) => {
   }
 
   return { updated, skipped, total: pages.length };
+};
+
+const syncProjectMappings = async ({ projectPageId } = {}) => {
+  if (!notionApiKey) throw new Error('Missing env var: NOTION_API_KEY');
+  if (!projectsDatabaseId) throw new Error('Missing env var: NOTION_DATABASE_ID_THEME_2 (Projects DB)');
+
+  const projectDb = await retrieveNotionDatabase(projectsDatabaseId);
+  const projectDbProps = projectDb?.properties || {};
+  const fieldMappingPropName = findPropNameInSchema(projectDbProps, ['FieldMapping', 'Field Mapping', 'Mapping']);
+  const uiPatternPropName = findPropNameInSchema(projectDbProps, ['UiPattern', 'UI Pattern', 'Pattern']);
+  if (!fieldMappingPropName && !uiPatternPropName) {
+    throw new Error('Projects DB missing FieldMapping/UiPattern properties');
+  }
+
+  const fieldMappingPropType = fieldMappingPropName ? projectDbProps[fieldMappingPropName]?.type : null;
+  const uiPatternPropType = uiPatternPropName ? projectDbProps[uiPatternPropName]?.type : null;
+
+  const pages = await queryAllNotionPages(projectsDatabaseId);
+  const sourceDbCache = new Map();
+  let updated = 0;
+  let skipped = 0;
+  let failed = 0;
+  const failures = [];
+
+  for (const page of pages) {
+    if (projectPageId && normalizeNotionId(page.id) !== normalizeNotionId(projectPageId)) continue;
+    if (!hasPublishedStatus(page.properties)) {
+      skipped += 1;
+      continue;
+    }
+
+    const project = normalizeProject(page);
+    if (!project.sourceDatabaseId) {
+      skipped += 1;
+      failures.push({ projectId: page.id, reason: 'Missing SourceDatabaseId' });
+      continue;
+    }
+
+    try {
+      let sourceDb = sourceDbCache.get(project.sourceDatabaseId);
+      if (!sourceDb) {
+        sourceDb = await retrieveNotionDatabase(project.sourceDatabaseId);
+        sourceDbCache.set(project.sourceDatabaseId, sourceDb);
+      }
+
+      const analyzed = analyzeSourceSchema(sourceDb.properties || {});
+      const mappingJson = JSON.stringify(analyzed.fieldMapping);
+      const payload = {};
+
+      if (fieldMappingPropName && fieldMappingPropType) {
+        const current = propText(page.properties?.[fieldMappingPropName] || '').trim();
+        if (current !== mappingJson) {
+          payload[fieldMappingPropName] = buildPropertyPayloadByType(fieldMappingPropType, mappingJson);
+        }
+      }
+
+      if (uiPatternPropName && uiPatternPropType) {
+        const current = propText(page.properties?.[uiPatternPropName] || '').trim();
+        if (current !== analyzed.uiPattern) {
+          payload[uiPatternPropName] = buildPropertyPayloadByType(uiPatternPropType, analyzed.uiPattern);
+        }
+      }
+
+      if (Object.keys(payload).length === 0) {
+        skipped += 1;
+        continue;
+      }
+
+      await updateNotionPage(page.id, { properties: payload });
+      updated += 1;
+    } catch (err) {
+      failed += 1;
+      failures.push({
+        projectId: page.id,
+        sourceDatabaseId: project.sourceDatabaseId,
+        reason: err instanceof Error ? err.message : 'Unknown error'
+      });
+    }
+  }
+
+  return {
+    updated,
+    skipped,
+    failed,
+    total: pages.length,
+    failures
+  };
 };
 
 const syncSingleCourseLink = async ({ baseUrl, coursePageId, slug }) => {
@@ -534,6 +696,27 @@ app.all('/api/admin/sync-course-link', async (req, res) => {
   }
 });
 
+app.post('/api/admin/sync-project-mappings', async (req, res) => {
+  if (courseLinkSyncSecret) {
+    const incomingSecret = req.get('x-sync-secret') || req.body?.secret || req.query?.secret;
+    if (incomingSecret !== courseLinkSyncSecret) {
+      return res.status(401).json({ error: 'Unauthorized sync request' });
+    }
+  }
+
+  const projectPageId = req.body?.projectPageId || req.body?.pageId || req.query?.projectPageId || req.query?.pageId;
+
+  try {
+    const result = await syncProjectMappings({ projectPageId });
+    return res.json({ ok: true, ...result });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Failed to sync project mappings',
+      detail: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
   app.get(/.*/, (_req, res) => {
@@ -550,6 +733,15 @@ app.listen(port, () => {
       })
       .catch((error) => {
         console.error('CourseLink sync failed:', error instanceof Error ? error.message : error);
+      });
+  }
+  if (enableProjectMappingSync) {
+    syncProjectMappings()
+      .then((result) => {
+        console.log(`Project mapping sync done. updated=${result.updated} skipped=${result.skipped} failed=${result.failed}`);
+      })
+      .catch((error) => {
+        console.error('Project mapping sync failed:', error instanceof Error ? error.message : error);
       });
   }
 });
