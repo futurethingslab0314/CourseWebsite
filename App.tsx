@@ -28,6 +28,13 @@ type MappedItem = {
   colors: string[];
 };
 
+const PATTERN_LABEL: Record<Pattern, string> = {
+  'gallery-story': 'Gallery Story',
+  'color-swatch': 'Color Swatch',
+  'link-cards': 'Link Cards',
+  'generic-cards': 'Generic Cards'
+};
+
 const parseCourseSlug = () => {
   const match = window.location.pathname.match(/^\/courses\/([^/]+)/);
   return match ? decodeURIComponent(match[1]) : null;
@@ -87,90 +94,142 @@ const resolveMappedItem = (item: SourceSnapshot['items'][number], mapping: Mappi
   };
 };
 
-const Theme1Page: React.FC<{ projectTitle: string; items: MappedItem[] }> = ({ projectTitle, items }) => {
-  const hero = items[0];
-  return (
-    <article className="border-t border-gray-100 pt-8 pb-14 md:pt-10">
-      <div className="flex flex-col gap-10 md:flex-row">
-        <div className="w-full md:w-1/3">
-          <div className="overflow-hidden rounded-sm border border-gray-100 shadow-sm">
-            <img
-              src={hero?.images[0] || 'https://picsum.photos/800/1000'}
-              alt={hero?.title || projectTitle}
-              className="w-full aspect-[4/5] object-cover grayscale hover:grayscale-0 transition-all duration-700"
-            />
-          </div>
-        </div>
-
-        <div className="w-full md:w-2/3">
-          <h2 className="text-3xl md:text-4xl font-light tracking-tight">{projectTitle}</h2>
-          <p className="mt-4 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{hero?.text || ''}</p>
-
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {items.slice(0, 6).map((item) => (
-              <div key={`${projectTitle}-${item.title}-${item.text}`} className="bg-white p-4 rounded-sm border border-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.04)]">
-                <h3 className="text-sm font-semibold text-gray-900">{item.title}</h3>
-                {item.text ? <p className="mt-2 text-xs text-gray-600 leading-relaxed">{item.text}</p> : null}
-                {item.colors.length ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {item.colors.slice(0, 4).map((c) => (
-                      <span key={c} className="inline-flex items-center gap-1 border border-gray-100 px-2 py-1 text-[10px] rounded-sm">
-                        <span className="w-2.5 h-2.5 rounded-full border border-black/10" style={{ backgroundColor: c }} />
-                        {c}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
+const AppFrame: React.FC<{ children: React.ReactNode; onHome: () => void; homeEnabled: boolean }> = ({ children, onHome, homeEnabled }) => (
+  <main className="min-h-screen bg-[var(--color-bg-canvas)] text-[var(--color-text-primary)]">
+    <header className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/85 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-[var(--container-max)] items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
+        <button
+          onClick={onHome}
+          disabled={!homeEnabled}
+          className="text-left font-['Space_Grotesk'] text-[var(--type-h3)] font-semibold tracking-[var(--tracking-tight)] disabled:cursor-default disabled:opacity-100"
+        >
+          Data-Enabled Creative Design
+        </button>
+        <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+          TemplateA / Course Showcase
+        </p>
       </div>
-    </article>
-  );
-};
+    </header>
 
-const Theme2Page: React.FC<{ projectTitle: string; items: MappedItem[] }> = ({ projectTitle, items }) => {
-  const cover = items[0]?.images[0] || 'https://picsum.photos/1280/800';
-  return (
-    <article className="border-t border-gray-100 py-10 md:py-14">
-      <div className="group relative">
-        <div className="aspect-[16/10] overflow-hidden bg-gray-50 rounded-sm shadow-sm">
-          <img src={cover} alt={projectTitle} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-        </div>
-        <h2 className="mt-6 text-4xl md:text-5xl font-light tracking-tight leading-none text-gray-800">{projectTitle}</h2>
+    {children}
+
+    <footer className="mt-14 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
+      <div className="mx-auto flex w-full max-w-[var(--container-max)] flex-col gap-2 px-5 py-6 text-[var(--type-micro)] text-[var(--color-text-secondary)] sm:px-8 lg:px-12">
+        <p>National Taiwan University of Science and Technology · Future Things Lab</p>
+        <p>Core style fixed by TemplateA. Assignment modules vary only by pattern.</p>
       </div>
+    </footer>
+  </main>
+);
 
-      <div className="mt-10 grid grid-cols-1 md:grid-cols-12 gap-10">
-        <div className="md:col-span-4 lg:col-span-3">
-          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap italic border-l-4 border-blue-50 pl-5">
-            {items[0]?.text || ''}
-          </p>
+const PatternSection: React.FC<{ pattern: Pattern; projectTitle: string; items: MappedItem[] }> = ({ pattern, projectTitle, items }) => {
+  if (!items.length) {
+    return (
+      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-8 text-[var(--type-body)] text-[var(--color-text-secondary)]">
+        No source content available for this project yet.
+      </section>
+    );
+  }
+
+  if (pattern === 'gallery-story') {
+    const cover = items[0].images[0] || 'https://picsum.photos/1200/760';
+    return (
+      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-5 shadow-[var(--shadow-sm)] sm:p-7">
+        <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-subtle)]">
+          <img src={cover} alt={projectTitle} className="h-[34vh] w-full object-cover sm:h-[44vh]" />
         </div>
-        <div className="md:col-span-8 lg:col-span-9">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {items.slice(0, 8).map((item) => (
-              <div key={`${projectTitle}-${item.title}-${item.text}`} className="space-y-3">
-                <div className="aspect-[4/3] overflow-hidden rounded-sm border border-gray-100">
-                  <img src={item.images[0] || cover} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+        <div className="mt-6 grid gap-[var(--grid-gap-md)] lg:grid-cols-[minmax(0,260px),1fr]">
+          <aside className="space-y-3 rounded-[var(--radius-md)] bg-[var(--color-bg-canvas)] p-4">
+            <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Insight</p>
+            <p className="text-[var(--type-caption)] leading-relaxed text-[var(--color-text-secondary)]">{items[0].text || 'No summary available.'}</p>
+          </aside>
+          <div className="grid gap-[var(--grid-gap-md)] md:grid-cols-2">
+            {items.map((item) => (
+              <article key={`${projectTitle}-${item.title}-${item.text}`} className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] p-3">
+                <div className="overflow-hidden rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)]">
+                  <img src={item.images[0] || cover} alt={item.title} className="aspect-[4/3] w-full object-cover" />
                 </div>
-                <h3 className="text-sm font-semibold">{item.title}</h3>
-                {item.text ? <p className="text-xs text-gray-500 leading-relaxed">{item.text}</p> : null}
-                {item.links.length ? (
-                  <div className="flex flex-wrap gap-2">
-                    {item.links.slice(0, 3).map((link) => (
-                      <a key={link} href={link} target="_blank" rel="noreferrer" className="text-[11px] text-blue-600 underline underline-offset-2">
-                        View link
-                      </a>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
+                <h3 className="mt-3 text-[var(--type-h3)] font-medium">{item.title}</h3>
+                {item.text ? <p className="mt-1 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{item.text}</p> : null}
+              </article>
             ))}
           </div>
         </div>
+      </section>
+    );
+  }
+
+  if (pattern === 'color-swatch') {
+    return (
+      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-5 shadow-[var(--shadow-sm)] sm:p-7">
+        <div className="grid gap-[var(--grid-gap-md)] lg:grid-cols-[1.1fr,0.9fr]">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {items.flatMap((item) => item.colors).slice(0, 12).map((color) => (
+              <div key={`${projectTitle}-${color}`} className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-white p-3">
+                <div className="h-16 rounded-[var(--radius-sm)] border border-black/5" style={{ backgroundColor: color }} />
+                <p className="mt-2 font-mono text-[var(--type-micro)] text-[var(--color-text-secondary)]">{color}</p>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-4 rounded-[var(--radius-md)] bg-[var(--color-bg-canvas)] p-5">
+            {items.slice(0, 4).map((item) => (
+              <article key={`${projectTitle}-${item.title}`}>
+                <h3 className="text-[var(--type-h3)] font-medium">{item.title}</h3>
+                {item.text ? <p className="mt-1 text-[var(--type-caption)] leading-relaxed text-[var(--color-text-secondary)]">{item.text}</p> : null}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (pattern === 'link-cards') {
+    return (
+      <section className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-5 shadow-[var(--shadow-sm)] sm:p-7">
+        <div className="grid gap-[var(--grid-gap-md)] sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((item) => (
+            <article key={`${projectTitle}-${item.title}-${item.text}`} className="flex h-full flex-col rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-white p-4">
+              <h3 className="text-[var(--type-h3)] font-medium">{item.title}</h3>
+              {item.text ? <p className="mt-2 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{item.text}</p> : null}
+              <div className="mt-4 space-y-2">
+                {item.links.slice(0, 3).map((link) => (
+                  <a
+                    key={link}
+                    href={link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-3 py-2 text-[var(--type-micro)] text-[var(--color-accent-theme-1)] hover:border-[var(--color-accent-theme-1)]"
+                  >
+                    Open resource
+                  </a>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-5 shadow-[var(--shadow-sm)] sm:p-7">
+      <div className="space-y-4">
+        {items.map((item) => (
+          <article key={`${projectTitle}-${item.title}-${item.text}`} className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] p-4">
+            <h3 className="text-[var(--type-h3)] font-medium">{item.title}</h3>
+            {item.text ? <p className="mt-2 text-[var(--type-caption)] leading-relaxed text-[var(--color-text-secondary)]">{item.text}</p> : null}
+            {(item.images.length > 0 || item.links.length > 0 || item.colors.length > 0) && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {item.images[0] ? <img src={item.images[0]} alt={item.title} className="h-16 w-24 rounded-[var(--radius-sm)] object-cover" /> : null}
+                {item.links[0] ? <a href={item.links[0]} target="_blank" rel="noreferrer" className="text-[var(--type-micro)] text-[var(--color-accent-theme-1)] underline">Reference link</a> : null}
+                {item.colors[0] ? <span className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-2 py-1 text-[var(--type-micro)]"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.colors[0] }} />{item.colors[0]}</span> : null}
+              </div>
+            )}
+          </article>
+        ))}
       </div>
-    </article>
+    </section>
   );
 };
 
@@ -266,27 +325,48 @@ const App: React.FC = () => {
     setActiveSlug(null);
   };
 
-  if (loading) return <div className="min-h-screen bg-[var(--color-bg-canvas)] p-10 text-center text-[var(--type-body)] text-[var(--color-text-secondary)]">Loading course data...</div>;
-  if (error) return <div className="min-h-screen bg-[var(--color-bg-canvas)] p-10 text-center text-[var(--type-body)] text-red-700">Error: {error}</div>;
+  if (loading) {
+    return (
+      <AppFrame onHome={goHome} homeEnabled={false}>
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-20 text-center text-[var(--type-body)] text-[var(--color-text-secondary)] sm:px-8 lg:px-12">
+          Loading course data...
+        </div>
+      </AppFrame>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppFrame onHome={goHome} homeEnabled={Boolean(activeSlug)}>
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-20 text-center text-[var(--type-body)] text-red-700 sm:px-8 lg:px-12">Error: {error}</div>
+      </AppFrame>
+    );
+  }
 
   if (!activeSlug) {
     return (
-      <main className="min-h-screen bg-[var(--color-bg-canvas)] py-[var(--section-padding-y)]">
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 sm:px-8 lg:px-12">
-          <section className="rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 shadow-[var(--shadow-md)] sm:p-10">
-            <h1 className="font-['Space_Grotesk'] text-[var(--type-display)] font-bold leading-[1.05] text-[var(--color-text-primary)]">Notion-Driven Course Showcase</h1>
-            <p className="mt-4 max-w-3xl text-[var(--type-body)] text-[var(--color-text-secondary)]">Open a course to view assignment projects in paged presentation mode.</p>
+      <AppFrame onHome={goHome} homeEnabled={false}>
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-10 sm:px-8 lg:px-12">
+          <section className="rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-7 shadow-[var(--shadow-md)] sm:p-10">
+            <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Course Website</p>
+            <h1 className="mt-2 font-['Space_Grotesk'] text-[var(--type-display)] font-bold leading-[1.05]">TemplateA Course Index</h1>
+            <p className="mt-4 max-w-3xl text-[var(--type-body)] text-[var(--color-text-secondary)]">
+              The whole website now follows one fixed visual system. Assignment projects change only through content pattern modules.
+            </p>
           </section>
 
           <section className="mt-[var(--space-10)] grid gap-[var(--grid-gap-md)] md:grid-cols-2">
             {courses.map((course) => (
-              <article key={course.id} className="overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)]">
-                {course.coverImage ? <img src={course.coverImage} alt={course.courseName} className="h-56 w-full object-cover" /> : null}
+              <article key={course.id} className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)]">
+                {course.coverImage ? <img src={course.coverImage} alt={course.courseName} className="h-52 w-full object-cover" /> : null}
                 <div className="p-5 sm:p-6">
-                  <p className="text-[var(--type-micro)] tracking-[var(--tracking-wide)] text-[var(--color-accent-theme-1)]">/{course.slug}</p>
-                  <h2 className="mt-1 font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold text-[var(--color-text-primary)]">{course.courseName}</h2>
+                  <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">/{course.slug}</p>
+                  <h2 className="mt-1 font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold">{course.courseName}</h2>
                   <p className="mt-2 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{course.courseSummary || 'No summary provided.'}</p>
-                  <button onClick={() => goToCourse(course.slug)} className="mt-5 rounded-[var(--radius-md)] bg-[var(--color-accent-theme-1)] px-4 py-2 text-[var(--type-caption)] font-medium text-white hover:opacity-90">
+                  <button
+                    onClick={() => goToCourse(course.slug)}
+                    className="mt-5 rounded-[var(--radius-md)] bg-[var(--color-accent-theme-1)] px-4 py-2 text-[var(--type-caption)] font-medium text-white hover:opacity-90"
+                  >
                     Open course
                   </button>
                 </div>
@@ -294,18 +374,18 @@ const App: React.FC = () => {
             ))}
           </section>
         </div>
-      </main>
+      </AppFrame>
     );
   }
 
   if (!currentCourse) {
     return (
-      <main className="min-h-screen bg-[var(--color-bg-canvas)] py-[var(--section-padding-y)]">
-        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 sm:px-8 lg:px-12">
+      <AppFrame onHome={goHome} homeEnabled={true}>
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-16 sm:px-8 lg:px-12">
           <p className="text-[var(--type-body)] text-[var(--color-text-secondary)]">Course not found: /courses/{activeSlug}</p>
           <button onClick={goHome} className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] px-4 py-2 text-[var(--type-caption)]">Back home</button>
         </div>
-      </main>
+      </AppFrame>
     );
   }
 
@@ -314,62 +394,68 @@ const App: React.FC = () => {
   const activePattern = activeProject ? resolvePattern(activeProject.uiPattern, activeSource) : 'generic-cards';
   const activeMapping = activeProject ? parseFieldMapping(activeProject.fieldMapping) : {};
   const mappedItems = activeSource ? activeSource.items.map((item) => resolveMappedItem(item, activeMapping)).slice(0, 8) : [];
-  const useTheme2 = activePattern === 'gallery-story' || projectPage % 2 === 1;
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg-canvas)] py-[var(--section-padding-y)]">
-      <div className="mx-auto w-full max-w-[var(--container-max)] px-5 sm:px-8 lg:px-12">
-        <button onClick={goHome} className="mb-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-3 py-2 text-[var(--type-caption)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
-          Back to all courses
-        </button>
-
+    <AppFrame onHome={goHome} homeEnabled={true}>
+      <div className="mx-auto w-full max-w-[var(--container-max)] px-5 py-8 sm:px-8 lg:px-12">
         <section className="overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-md)]">
-          {currentCourse.coverImage ? <img src={currentCourse.coverImage} alt={currentCourse.courseName} className="h-60 w-full object-cover md:h-80" /> : null}
+          {currentCourse.coverImage ? <img src={currentCourse.coverImage} alt={currentCourse.courseName} className="h-56 w-full object-cover md:h-72" /> : null}
           <div className="p-6 sm:p-8">
-            <h1 className="font-['Space_Grotesk'] text-[var(--type-h1)] font-bold leading-tight text-[var(--color-text-primary)]">{currentCourse.courseName}</h1>
+            <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">Course Overview</p>
+            <h1 className="mt-2 font-['Space_Grotesk'] text-[var(--type-h1)] font-bold leading-tight">{currentCourse.courseName}</h1>
             <p className="mt-3 max-w-4xl text-[var(--type-body)] text-[var(--color-text-secondary)]">{currentCourse.courseSummary || 'No summary provided.'}</p>
           </div>
         </section>
 
         {courseProjects.length > 0 ? (
-          <section className="mt-8 rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-white p-4 sm:p-6">
-            <div className="mb-4 flex flex-wrap gap-2">
-              {courseProjects.map((project, idx) => (
-                <button
-                  key={project.id}
-                  onClick={() => setProjectPage(idx)}
-                  className={`px-3 py-1.5 text-xs rounded-sm border transition-all ${
-                    idx === projectPage ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                  }`}
-                >
-                  {project.tabName || `Project ${idx + 1}`}
-                </button>
-              ))}
+          <section className="mt-7 space-y-4">
+            <div className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-3 sm:p-4">
+              <div className="flex flex-wrap gap-2">
+                {courseProjects.map((project, idx) => {
+                  const isActive = idx === projectPage;
+                  return (
+                    <button
+                      key={project.id}
+                      onClick={() => setProjectPage(idx)}
+                      className={`rounded-[var(--radius-sm)] border px-3 py-1.5 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] transition-all ${
+                        isActive
+                          ? 'border-[var(--color-text-primary)] bg-[var(--color-text-primary)] text-white'
+                          : 'border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)]'
+                      }`}
+                    >
+                      {project.tabName || `Project ${idx + 1}`}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {activeProject ? (
               <>
-                {useTheme2 ? (
-                  <Theme2Page projectTitle={activeProject.tabName || activeProject.projectName} items={mappedItems} />
-                ) : (
-                  <Theme1Page projectTitle={activeProject.tabName || activeProject.projectName} items={mappedItems} />
-                )}
+                <section className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-5 py-4">
+                  <div>
+                    <h2 className="font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold">{activeProject.tabName || activeProject.projectName}</h2>
+                    <p className="mt-1 text-[var(--type-caption)] text-[var(--color-text-secondary)]">Pattern module: {PATTERN_LABEL[activePattern]}</p>
+                  </div>
+                  <p className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-3 py-1 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+                    {projectPage + 1} / {courseProjects.length}
+                  </p>
+                </section>
 
-                <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
+                <PatternSection pattern={activePattern} projectTitle={activeProject.tabName || activeProject.projectName} items={mappedItems} />
+
+                <div className="flex items-center justify-between rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-3 sm:p-4">
                   <button
                     onClick={() => setProjectPage((p) => Math.max(0, p - 1))}
                     disabled={projectPage === 0}
-                    className="px-4 py-2 text-xs uppercase tracking-wider border border-gray-200 rounded-sm disabled:opacity-40"
+                    className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-4 py-2 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] disabled:opacity-40"
                   >
                     Previous
                   </button>
-                  <p className="text-xs text-gray-500">
-                    {projectPage + 1} / {courseProjects.length}
-                  </p>
                   <button
                     onClick={() => setProjectPage((p) => Math.min(courseProjects.length - 1, p + 1))}
                     disabled={projectPage === courseProjects.length - 1}
-                    className="px-4 py-2 text-xs uppercase tracking-wider border border-gray-200 rounded-sm disabled:opacity-40"
+                    className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-4 py-2 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] disabled:opacity-40"
                   >
                     Next
                   </button>
@@ -378,12 +464,12 @@ const App: React.FC = () => {
             ) : null}
           </section>
         ) : (
-          <section className="mt-8 rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-8 text-center text-[var(--type-body)] text-[var(--color-text-secondary)]">
+          <section className="mt-7 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-8 text-center text-[var(--type-body)] text-[var(--color-text-secondary)]">
             No published projects linked to this course.
           </section>
         )}
       </div>
-    </main>
+    </AppFrame>
   );
 };
 
