@@ -361,44 +361,6 @@ const App: React.FC = () => {
 
             <section className="mt-16">
               <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
-              <div className="mt-6 max-w-[680px] space-y-4">
-                <p className="text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
-                  {activeProject.projectDescription || 'No project description provided.'}
-                </p>
-              </div>
-            </section>
-
-            <section className="mt-16">
-              <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
-                <article className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-                  <p className="text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
-                    {activeProject.projectDescription || 'No project description provided.'}
-                  </p>
-                </article>
-                <article className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-                  <div className="mt-4 flex items-center justify-between gap-4">
-                    <button
-                      onClick={() => setProjectPage((p) => Math.max(0, p - 1))}
-                      disabled={projectPage === 0}
-                      className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)] disabled:opacity-40"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => setProjectPage((p) => Math.min(courseProjects.length - 1, p + 1))}
-                      disabled={projectPage === courseProjects.length - 1}
-                      className="border border-[var(--color-border-subtle)] px-4 py-4 text-[var(--type-micro)] leading-[1.5] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)] disabled:opacity-40"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </article>
-              </div>
-            </section>
-
-            <section className="mt-16">
-              <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
               <div className="mt-6">
                 <CardRenderer
                   styleKey={activePattern}
