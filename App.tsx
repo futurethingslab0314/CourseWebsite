@@ -127,10 +127,10 @@ const AppFrame: React.FC<{ children: React.ReactNode; onHome: () => void; homeEn
           disabled={!homeEnabled}
           className="text-left font-['Space_Grotesk'] text-[var(--type-h3)] font-semibold tracking-[var(--tracking-tight)] disabled:cursor-default disabled:opacity-100"
         >
-          Data-Enabled Creative Design
+          Back To Design Course List
         </button>
         <p className="text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-          TemplateA / Course Showcase
+          Course Showcase
         </p>
       </div>
     </header>
@@ -139,8 +139,8 @@ const AppFrame: React.FC<{ children: React.ReactNode; onHome: () => void; homeEn
 
     <footer className="mt-14 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
       <div className="mx-auto flex w-full max-w-[var(--container-max)] flex-col gap-2 px-5 py-6 text-[var(--type-micro)] text-[var(--color-text-secondary)] sm:px-8 lg:px-12">
-        <p>National Taiwan University of Science and Technology · Future Things Lab</p>
-        <p>Core style fixed by TemplateA. Assignment modules vary only by pattern.</p>
+        <p>National Taiwan University of Science and Technology / Design Department</p>
+        <p>Lecture by Assistant Prof. Yu-Ting Cheng</p>
       </div>
     </footer>
   </main>
@@ -462,11 +462,10 @@ const App: React.FC = () => {
                     <button
                       key={project.id}
                       onClick={() => setProjectPage(idx)}
-                      className={`rounded-[var(--radius-sm)] border px-3 py-1.5 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] transition-all ${
-                        isActive
+                      className={`rounded-[var(--radius-sm)] border px-3 py-1.5 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] transition-all ${isActive
                           ? 'border-[var(--color-text-primary)] bg-[var(--color-text-primary)] text-white'
                           : 'border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)]'
-                      }`}
+                        }`}
                     >
                       {project.tabName || `Project ${idx + 1}`}
                     </button>
