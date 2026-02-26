@@ -333,7 +333,7 @@ const App: React.FC = () => {
                     : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-primary)]'
                     }`}
                 >
-                  {project.tabName || `Project ${idx + 1}`}
+                  {`Project ${idx + 1}`}
                 </button>
               );
             })}
@@ -360,7 +360,6 @@ const App: React.FC = () => {
             </section>
 
             <section className="mt-16">
-              <h3 className="text-[var(--type-h3)] leading-[1.4] font-medium">{activeProject.tabName || activeProject.projectName}</h3>
               <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
               <div className="mt-6 max-w-[680px] space-y-4">
                 <p className="text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
@@ -370,12 +369,10 @@ const App: React.FC = () => {
             </section>
 
             <section className="mt-16">
-              <h3 className="text-[var(--type-h3)] leading-[1.4] font-medium">{activeProject.projectName}</h3>
               <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 <article className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-                  <p className="text-[var(--type-body)] leading-[1.5] text-[var(--color-text-primary)]">{activeProject.tabName || activeProject.projectName}</p>
-                  <p className="mt-4 text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
+                  <p className="text-[var(--type-body)] leading-[1.5] text-[var(--color-text-secondary)]">
                     {activeProject.projectDescription || 'No project description provided.'}
                   </p>
                 </article>
@@ -401,12 +398,11 @@ const App: React.FC = () => {
             </section>
 
             <section className="mt-16">
-              <h3 className="text-[var(--type-h3)] leading-[1.4] font-medium">{activeProject.tabName || activeProject.projectName}</h3>
               <div className="mt-4 border-t border-[var(--color-border-subtle)]" />
               <div className="mt-6">
                 <CardRenderer
                   styleKey={activePattern}
-                  projectTitle={activeProject.tabName || activeProject.projectName}
+                  projectTitle={currentCourse.courseName}
                   items={mappedItems}
                   density={activeDensity}
                   accentTheme={activeAccentTheme}
