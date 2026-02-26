@@ -14,6 +14,7 @@ type SourceSnapshot = {
     colors: string[];
     fields: Record<string, { text: string; images: string[]; links: string[]; colors: string[] }>;
   }[];
+  error?: string;
 };
 
 type Mapping = Partial<Record<'title' | 'text' | 'image' | 'gallery' | 'link' | 'color', string>>;
@@ -25,6 +26,7 @@ const parseCourseSlug = () => {
 };
 
 const isCourseMatch = (course: Course, slug: string) => course.slug.toLowerCase() === slug.toLowerCase();
+const normalizeId = (value: string) => (value || '').replace(/-/g, '').toLowerCase();
 
 const parseFieldMapping = (raw: string): Mapping => {
   const value = (raw || '').trim();
@@ -127,9 +129,14 @@ const App: React.FC = () => {
 
   const courseProjects = useMemo(() => {
     if (!currentCourse) return [];
-    const explicitIds = new Set(currentCourse.projectIds);
+    const explicitIds = new Set((currentCourse.projectIds || []).map(normalizeId));
+    const courseId = normalizeId(currentCourse.id);
     return projects
-      .filter((project) => explicitIds.has(project.id) || project.courseIds.includes(currentCourse.id))
+      .filter((project) => {
+        const projectId = normalizeId(project.id);
+        const linkedCourseIds = (project.courseIds || []).map(normalizeId);
+        return explicitIds.has(projectId) || linkedCourseIds.includes(courseId);
+      })
       .sort((a, b) => a.order - b.order);
   }, [currentCourse, projects]);
 
@@ -153,8 +160,16 @@ const App: React.FC = () => {
                 items: snapshot.items
               }
             ] as const;
-          } catch {
-            return [dbId, { dbTitle: dbId, fields: [], items: [] }] as const;
+          } catch (err) {
+            return [
+              dbId,
+              {
+                dbTitle: dbId,
+                fields: [],
+                items: [],
+                error: err instanceof Error ? err.message : 'Failed to load source database'
+              }
+            ] as const;
           }
         })
       );
@@ -330,6 +345,11 @@ const App: React.FC = () => {
                       </div>
                     ) : null}
                     {source && source.items.length === 0 ? <p className="mt-3 text-xs text-[#78716c]">No rows found in source database.</p> : null}
+                    {source?.error ? (
+                      <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                        Source DB load failed: {source.error}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               </article>

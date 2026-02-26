@@ -82,7 +82,7 @@ export const fetchProjects = async (): Promise<Project[]> => {
 export const fetchSourceDatabase = async (
   databaseId: string
 ): Promise<{ title: string; properties: NotionDatabaseProperty[]; items: NormalizedSourceItem[] }> => {
-  const res = await fetch(`/api/source-database/${databaseId}`);
+  const res = await fetch(`/api/source-database/${encodeURIComponent(databaseId)}`);
   if (!res.ok) throw new Error(`Failed to fetch source DB ${databaseId}: ${res.status}`);
   const data = await res.json();
 

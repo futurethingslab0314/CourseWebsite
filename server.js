@@ -134,11 +134,69 @@ const propRelationIds = (prop) => {
   return (prop.relation || []).map((item) => item.id).filter(Boolean);
 };
 
+const normalizeNotionId = (value = '') => value.toString().replace(/-/g, '').toLowerCase();
+
+const extractNotionId = (raw = '') => {
+  const text = raw.trim();
+  if (!text) return '';
+  const firstSegment = text.split(/[,\s;]/).map((s) => s.trim()).find(Boolean) || text;
+  const direct = firstSegment.match(/^[0-9a-fA-F-]{32,36}$/);
+  if (direct) return firstSegment;
+  const urlMatch = firstSegment.match(/([0-9a-fA-F]{32})/);
+  if (urlMatch) return urlMatch[1];
+  const cleaned = firstSegment.replace(/[^0-9a-fA-F-]/g, '');
+  if (/^[0-9a-fA-F-]{32,36}$/.test(cleaned)) return cleaned;
+  return firstSegment;
+};
+
+const findFirstProp = (props = {}, keys = []) => {
+  for (const key of keys) {
+    if (props[key]) return props[key];
+  }
+  const entries = Object.entries(props);
+  for (const key of keys) {
+    const hit = entries.find(([name]) => name.toLowerCase() === key.toLowerCase());
+    if (hit) return hit[1];
+  }
+  return undefined;
+};
+
+const findRelationProp = (props = {}, keywords = []) => {
+  const entries = Object.entries(props);
+  const exact = entries.find(([name, prop]) =>
+    prop?.type === 'relation' && keywords.some((kw) => name.toLowerCase() === kw.toLowerCase())
+  );
+  if (exact) return exact[1];
+
+  const fuzzy = entries.find(([name, prop]) =>
+    prop?.type === 'relation' && keywords.some((kw) => name.toLowerCase().includes(kw.toLowerCase()))
+  );
+  return fuzzy ? fuzzy[1] : undefined;
+};
+
 const hasPublishedStatus = (props = {}) => {
-  const statusProp = props.Status || props.status;
+  const statusProp = findFirstProp(props, ['Status', 'status', 'PublishStatus', 'State']);
   if (!statusProp) return true;
   const value = propText(statusProp).trim().toLowerCase();
-  return value === 'published';
+  if (!value) return true;
+  if (
+    value.includes('draft') ||
+    value.includes('unpublish') ||
+    value.includes('private') ||
+    value.includes('archived') ||
+    value.includes('停用')
+  ) {
+    return false;
+  }
+  if (
+    value.includes('published') ||
+    value.includes('publish') ||
+    value.includes('發佈') ||
+    value.includes('發布')
+  ) {
+    return true;
+  }
+  return true;
 };
 
 const pickTitle = (props = {}) => {
@@ -153,17 +211,18 @@ const pickTitle = (props = {}) => {
 
 const normalizeCourse = (page) => {
   const props = page.properties || {};
-  const slugRaw = propText(props.Slug || props.slug);
+  const slugRaw = propText(findFirstProp(props, ['Slug', 'slug']));
   const fallbackSlug = pickTitle(props).trim().toLowerCase().replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-');
+  const projectRelation = findRelationProp(props, ['Projects', 'Project', 'course project', 'projects']);
   return {
     id: page.id,
     slug: (slugRaw || fallbackSlug || page.id).trim(),
-    courseName: propText(props.CourseName) || pickTitle(props) || 'Untitled Course',
-    courseSummary: propText(props.CourseSummary),
-    coverImage: propFiles(props.CoverImage)[0] || '',
-    courseLink: propText(props.CourseLink),
-    status: propText(props.Status),
-    projectIds: propRelationIds(props.Projects)
+    courseName: propText(findFirstProp(props, ['CourseName', 'Name', 'Title'])) || pickTitle(props) || 'Untitled Course',
+    courseSummary: propText(findFirstProp(props, ['CourseSummary', 'Summary', 'Description'])),
+    coverImage: propFiles(findFirstProp(props, ['CoverImage', 'Cover', 'Image']))[0] || '',
+    courseLink: propText(findFirstProp(props, ['CourseLink', 'Link'])),
+    status: propText(findFirstProp(props, ['Status', 'status'])),
+    projectIds: propRelationIds(projectRelation)
   };
 };
 
@@ -254,7 +313,7 @@ const syncSingleCourseLink = async ({ baseUrl, coursePageId, slug }) => {
 
   const pages = await queryAllNotionPages(coursesDatabaseId);
   const target = pages.find((page) => {
-    if (coursePageId && page.id === coursePageId) return true;
+    if (coursePageId && normalizeNotionId(page.id) === normalizeNotionId(coursePageId)) return true;
     if (slug) {
       const normalized = normalizeCourse(page);
       return normalized.slug.toLowerCase() === slug.toLowerCase();
@@ -294,17 +353,21 @@ const syncSingleCourseLink = async ({ baseUrl, coursePageId, slug }) => {
 
 const normalizeProject = (page) => {
   const props = page.properties || {};
-  const orderValue = Number(propText(props.Order));
+  const orderValue = Number(propText(findFirstProp(props, ['Order', 'Sort', 'Index'])));
+  const sourceRaw = propText(
+    findFirstProp(props, ['SourceDatabaseId', 'SourceDatabaseID', 'Source DB Id', 'SourceDbId', 'SourceDatabase', 'Source DB'])
+  );
+  const courseRelation = findRelationProp(props, ['Course', 'Courses', '課程']);
   return {
     id: page.id,
-    projectName: propText(props.ProjectName) || pickTitle(props) || 'Untitled Project',
-    tabName: propText(props.TabName) || propText(props.ProjectName) || pickTitle(props) || 'Project',
+    projectName: propText(findFirstProp(props, ['ProjectName', 'Name', 'Title'])) || pickTitle(props) || 'Untitled Project',
+    tabName: propText(findFirstProp(props, ['TabName', 'ProjectName', 'Name'])) || pickTitle(props) || 'Project',
     order: Number.isFinite(orderValue) ? orderValue : Number.MAX_SAFE_INTEGER,
-    sourceDatabaseId: propText(props.SourceDatabaseId).trim(),
-    status: propText(props.Status),
-    uiPattern: propText(props.UiPattern),
-    fieldMapping: propText(props.FieldMapping),
-    courseIds: propRelationIds(props.Course)
+    sourceDatabaseId: extractNotionId(sourceRaw),
+    status: propText(findFirstProp(props, ['Status', 'status'])),
+    uiPattern: propText(findFirstProp(props, ['UiPattern', 'UI Pattern', 'Pattern'])),
+    fieldMapping: propText(findFirstProp(props, ['FieldMapping', 'Field Mapping', 'Mapping'])),
+    courseIds: propRelationIds(courseRelation)
   };
 };
 
