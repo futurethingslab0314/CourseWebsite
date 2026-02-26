@@ -215,6 +215,12 @@ const normalizeCourse = (page) => {
   const slugRaw = propText(findFirstProp(props, ['Slug', 'slug']));
   const fallbackSlug = pickTitle(props).trim().toLowerCase().replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-');
   const projectRelation = findRelationProp(props, ['Projects', 'Project', 'course project', 'projects']);
+  const densityRaw = propText(findFirstProp(props, ['Density', 'density'])).trim().toLowerCase();
+  const accentThemeRaw = propText(findFirstProp(props, ['AccentTheme', 'Accent Theme', 'accentTheme'])).trim().toLowerCase();
+  const mediaPriorityRaw = propText(findFirstProp(props, ['MediaPriority', 'Media Priority', 'mediaPriority'])).trim().toLowerCase();
+  const density = densityRaw === 'compact' || densityRaw === 'comfortable' || densityRaw === 'immersive' ? densityRaw : undefined;
+  const accentTheme = accentThemeRaw === 'theme-1' || accentThemeRaw === 'theme-2' || accentThemeRaw === 'auto' ? accentThemeRaw : undefined;
+  const mediaPriority = mediaPriorityRaw === 'image' || mediaPriorityRaw === 'text' || mediaPriorityRaw === 'balanced' ? mediaPriorityRaw : undefined;
   return {
     id: page.id,
     slug: (slugRaw || fallbackSlug || page.id).trim(),
@@ -223,6 +229,9 @@ const normalizeCourse = (page) => {
     coverImage: propFiles(findFirstProp(props, ['CoverImage', 'Cover', 'Image']))[0] || '',
     courseLink: propText(findFirstProp(props, ['CourseLink', 'Link'])),
     status: propText(findFirstProp(props, ['Status', 'status'])),
+    density,
+    accentTheme,
+    mediaPriority,
     projectIds: propRelationIds(projectRelation)
   };
 };

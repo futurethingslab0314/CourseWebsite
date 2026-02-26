@@ -49,6 +49,9 @@ export interface Course {
   coverImage: string;
   courseLink: string;
   status: string;
+  density?: 'compact' | 'comfortable' | 'immersive';
+  accentTheme?: 'theme-1' | 'theme-2' | 'auto';
+  mediaPriority?: 'image' | 'text' | 'balanced';
   projectIds: string[];
 }
 

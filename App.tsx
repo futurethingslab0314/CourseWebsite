@@ -38,18 +38,6 @@ const PATTERN_LABEL: Record<Pattern, string> = {
   'generic-cards': 'Generic Cards'
 };
 
-const DENSITY_LABEL: Record<Density, string> = {
-  compact: 'Compact',
-  comfortable: 'Comfortable',
-  immersive: 'Immersive'
-};
-
-const MEDIA_LABEL: Record<MediaPriority, string> = {
-  image: 'Image First',
-  text: 'Text First',
-  balanced: 'Balanced'
-};
-
 const parseCourseSlug = () => {
   const match = window.location.pathname.match(/^\/courses\/([^/]+)/);
   return match ? decodeURIComponent(match[1]) : null;
@@ -109,21 +97,24 @@ const resolveMappedItem = (item: SourceSnapshot['items'][number], mapping: Mappi
   };
 };
 
-const resolveDensity = (project: Project | undefined): Density => {
+const resolveDensity = (project: Project | undefined, course: Course | null): Density => {
   if (project?.density === 'compact' || project?.density === 'comfortable' || project?.density === 'immersive') return project.density;
+  if (course?.density === 'compact' || course?.density === 'comfortable' || course?.density === 'immersive') return course.density;
   return 'comfortable';
 };
 
-const resolveAccentTheme = (project: Project | undefined, pattern: Pattern): AccentTheme => {
+const resolveAccentTheme = (project: Project | undefined, course: Course | null, pattern: Pattern): AccentTheme => {
   if (project?.accentTheme === 'theme-1' || project?.accentTheme === 'theme-2' || project?.accentTheme === 'auto') {
     if (project.accentTheme !== 'auto') return project.accentTheme;
   }
+  if (course?.accentTheme === 'theme-1' || course?.accentTheme === 'theme-2') return course.accentTheme;
   if (pattern === 'gallery-story') return 'theme-2';
   return 'theme-1';
 };
 
-const resolveMediaPriority = (project: Project | undefined): MediaPriority => {
+const resolveMediaPriority = (project: Project | undefined, course: Course | null): MediaPriority => {
   if (project?.mediaPriority === 'image' || project?.mediaPriority === 'text' || project?.mediaPriority === 'balanced') return project.mediaPriority;
+  if (course?.mediaPriority === 'image' || course?.mediaPriority === 'text' || course?.mediaPriority === 'balanced') return course.mediaPriority;
   return 'balanced';
 };
 
@@ -445,9 +436,9 @@ const App: React.FC = () => {
   const activePattern = activeProject ? resolvePattern(activeProject.uiPattern, activeSource) : 'generic-cards';
   const activeMapping = activeProject ? parseFieldMapping(activeProject.fieldMapping) : {};
   const mappedItems = activeSource ? activeSource.items.map((item) => resolveMappedItem(item, activeMapping)).slice(0, 8) : [];
-  const activeDensity = resolveDensity(activeProject);
-  const activeAccentTheme = resolveAccentTheme(activeProject, activePattern);
-  const activeMediaPriority = resolveMediaPriority(activeProject);
+  const activeDensity = resolveDensity(activeProject, currentCourse);
+  const activeAccentTheme = resolveAccentTheme(activeProject, currentCourse, activePattern);
+  const activeMediaPriority = resolveMediaPriority(activeProject, currentCourse);
 
   return (
     <AppFrame onHome={goHome} homeEnabled={true}>
@@ -491,20 +482,9 @@ const App: React.FC = () => {
                     <h2 className="font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold">{activeProject.tabName || activeProject.projectName}</h2>
                     <p className="mt-1 text-[var(--type-caption)] text-[var(--color-text-secondary)]">Pattern module: {PATTERN_LABEL[activePattern]}</p>
                   </div>
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    <p className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-3 py-1 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-                      Density: {DENSITY_LABEL[activeDensity]}
-                    </p>
-                    <p className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-3 py-1 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-                      Accent: {activeAccentTheme}
-                    </p>
-                    <p className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-3 py-1 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-                      Media: {MEDIA_LABEL[activeMediaPriority]}
-                    </p>
-                    <p className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-3 py-1 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
-                      {projectPage + 1} / {courseProjects.length}
-                    </p>
-                  </div>
+                  <p className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-3 py-1 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
+                    {projectPage + 1} / {courseProjects.length}
+                  </p>
                 </section>
 
                 <PatternSection
