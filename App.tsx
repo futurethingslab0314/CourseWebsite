@@ -88,14 +88,7 @@ const SectionContainer: React.FC<{ children: React.ReactNode }> = ({ children })
 );
 
 const PatternGallery: React.FC<{ items: ReturnType<typeof resolveMappedItem>[] }> = ({ items }) => (
-  <div className="grid gap-[var(--grid-gap-md)] lg:grid-cols-[minmax(240px,320px)_1fr]">
-    <aside className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-5 lg:sticky lg:top-6 lg:h-fit">
-      <h3 className="font-['Space_Grotesk'] text-[var(--type-h3)] font-semibold text-[var(--color-text-primary)]">Insight</h3>
-      <p className="mt-2 text-[var(--type-caption)] text-[var(--color-text-secondary)]">
-        Process-focused layout with sticky context and media stream.
-      </p>
-    </aside>
-    <div className="space-y-[var(--grid-gap-sm)]">
+  <div className="space-y-[var(--grid-gap-sm)]">
       {items.map((item) => (
         <article key={`${item.title}-${item.text}`} className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)]">
           {item.images[0] ? <img src={item.images[0]} alt={item.title} className="h-56 w-full object-cover sm:h-72" /> : null}
@@ -114,7 +107,6 @@ const PatternGallery: React.FC<{ items: ReturnType<typeof resolveMappedItem>[] }
           </div>
         </article>
       ))}
-    </div>
   </div>
 );
 
@@ -324,50 +316,18 @@ const App: React.FC = () => {
 
             return (
               <article key={project.id} className="rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h2 className="font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold text-[var(--color-text-primary)]">{project.tabName || project.projectName}</h2>
-                    <p className="mt-1 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{project.projectName}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-[var(--radius-md)] bg-[var(--color-accent-theme-2)]/15 px-3 py-1 text-[var(--type-micro)] text-[var(--color-accent-theme-2)]">{pattern}</span>
-                    <span className="rounded-[var(--radius-md)] bg-[var(--color-accent-theme-1)]/15 px-3 py-1 text-[var(--type-micro)] text-[var(--color-accent-theme-1)]">{project.sourceDatabaseId || 'missing source DB'}</span>
-                  </div>
+                <div>
+                  <h2 className="font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold text-[var(--color-text-primary)]">{project.tabName || project.projectName}</h2>
+                  <p className="mt-1 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{project.projectName}</p>
                 </div>
 
-                <div className="mt-4 grid gap-[var(--grid-gap-md)] lg:grid-cols-[300px_1fr]">
-                  <aside className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] p-4">
-                    <h3 className="font-['Space_Grotesk'] text-[var(--type-h3)] font-semibold">Schema + Mapping</h3>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {(source?.fields || []).map((field) => (
-                        <span key={`${field.name}-${field.type}`} className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-2.5 py-1 text-[var(--type-micro)] text-[var(--color-text-secondary)]">
-                          {field.name} ({field.type})
-                        </span>
-                      ))}
-                    </div>
-                    {Object.keys(mapping).length ? (
-                      <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-3">
-                        <p className="mb-2 text-[var(--type-micro)] tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">FIELDMAPPING</p>
-                        {Object.entries(mapping).map(([key, value]) => (
-                          <p key={key} className="font-mono text-[var(--type-micro)] text-[var(--color-text-secondary)]">{key}: {value}</p>
-                        ))}
-                      </div>
-                    ) : null}
-                  </aside>
+                <div className="mt-4">
+                  {pattern === 'gallery-story' ? <PatternGallery items={mappedItems} /> : null}
+                  {pattern === 'color-swatch' ? <PatternSwatch items={mappedItems} /> : null}
+                  {pattern === 'link-cards' ? <PatternLinks items={mappedItems} /> : null}
+                  {pattern === 'generic-cards' ? <PatternGeneric items={mappedItems} /> : null}
 
-                  <div>
-                    {pattern === 'gallery-story' ? <PatternGallery items={mappedItems} /> : null}
-                    {pattern === 'color-swatch' ? <PatternSwatch items={mappedItems} /> : null}
-                    {pattern === 'link-cards' ? <PatternLinks items={mappedItems} /> : null}
-                    {pattern === 'generic-cards' ? <PatternGeneric items={mappedItems} /> : null}
-
-                    {source && source.items.length === 0 ? <p className="mt-3 text-[var(--type-caption)] text-[var(--color-text-secondary)]">No rows found in source database.</p> : null}
-                    {source?.error ? (
-                      <p className="mt-3 rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-[var(--type-caption)] text-red-700">
-                        Source DB load failed: {source.error}
-                      </p>
-                    ) : null}
-                  </div>
+                  {source && source.items.length === 0 ? <p className="mt-3 text-[var(--type-caption)] text-[var(--color-text-secondary)]">No work items available.</p> : null}
                 </div>
               </article>
             );
