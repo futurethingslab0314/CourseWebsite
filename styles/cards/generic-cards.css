@@ -1,0 +1,40 @@
+.card--generic-cards .generic-cards__list {
+  display: grid;
+  gap: var(--card-gap);
+}
+
+.card--generic-cards .generic-cards__meta {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.card--generic-cards .generic-cards__thumb {
+  width: 96px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.card--generic-cards .generic-cards__link {
+  font-size: var(--type-micro);
+  color: var(--pattern-accent, var(--color-accent-theme-1));
+}
+
+.card--generic-cards .generic-cards__swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--type-micro);
+}
+
+.card--generic-cards .generic-cards__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}

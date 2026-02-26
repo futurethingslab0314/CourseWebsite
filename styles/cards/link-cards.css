@@ -1,0 +1,48 @@
+.card--link-cards {
+  --link-grid-columns: 3;
+}
+
+.card--link-cards .link-cards__grid {
+  display: grid;
+  gap: var(--card-gap);
+  grid-template-columns: repeat(var(--link-grid-columns), minmax(0, 1fr));
+}
+
+.card--link-cards .link-cards__item {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card--link-cards .link-cards__links {
+  margin-top: auto;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.card--link-cards .link-cards__cta {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: var(--type-micro);
+  text-decoration: none;
+  color: var(--pattern-accent, var(--color-accent-theme-1));
+  padding: var(--space-2) var(--space-3);
+  transition: border-color var(--motion-base) var(--ease-emphasis);
+}
+
+.card--link-cards .link-cards__cta:hover {
+  border-color: var(--pattern-accent, var(--color-accent-theme-1));
+}
+
+@media (max-width: 1100px) {
+  .card--link-cards .link-cards__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .card--link-cards .link-cards__grid {
+    grid-template-columns: 1fr;
+  }
+}

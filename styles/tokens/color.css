@@ -1,0 +1,12 @@
+:root {
+  --color-bg-canvas: #f4f5f7;
+  --color-bg-surface: #ffffff;
+  --color-text-primary: #121826;
+  --color-text-secondary: #4b5565;
+  --color-border-subtle: #dde3ea;
+  --color-accent-theme-1: #1d4ed8;
+  --color-accent-theme-2: #0f766e;
+  --color-status-info: #2563eb;
+  --color-status-success: #15803d;
+  --color-status-warning: #b45309;
+}

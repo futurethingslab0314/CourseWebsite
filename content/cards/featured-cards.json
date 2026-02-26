@@ -1,0 +1,9 @@
+[
+  {
+    "title": "Situated Data Reading Pack",
+    "text": "Curated links for theory, methods, and implementation references.",
+    "images": ["https://picsum.photos/seed/reading/900/600"],
+    "links": ["https://example.com/paper-1", "https://example.com/paper-2", "https://example.com/toolkit"],
+    "colors": ["#2A2A2A", "#EAEAEA"]
+  }
+]

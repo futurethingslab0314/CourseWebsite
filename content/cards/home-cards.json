@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Urban Sound Diary",
+    "text": "A process-driven exploration of daily acoustic traces.",
+    "images": ["https://picsum.photos/seed/sound-1/900/600", "https://picsum.photos/seed/sound-2/900/600"],
+    "links": ["https://example.com/slides", "https://example.com/github"],
+    "colors": ["#1B3A57", "#4A90A4", "#E4C16F", "#F5EFE6"]
+  },
+  {
+    "title": "Transit Memory Palette",
+    "text": "Color system derived from metro movement logs.",
+    "images": ["https://picsum.photos/seed/transit/900/600"],
+    "links": ["https://example.com/spec-sheet"],
+    "colors": ["#21334F", "#A4BBD1", "#E9D7A5"]
+  }
+]
