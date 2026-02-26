@@ -543,7 +543,13 @@ const normalizeProject = (page) => {
   const sourceRaw = propText(
     findFirstProp(props, ['SourceDatabaseId', 'SourceDatabaseID', 'Source DB Id', 'SourceDbId', 'SourceDatabase', 'Source DB'])
   );
+  const densityRaw = propText(findFirstProp(props, ['Density', 'density'])).trim().toLowerCase();
+  const accentThemeRaw = propText(findFirstProp(props, ['AccentTheme', 'Accent Theme', 'accentTheme'])).trim().toLowerCase();
+  const mediaPriorityRaw = propText(findFirstProp(props, ['MediaPriority', 'Media Priority', 'mediaPriority'])).trim().toLowerCase();
   const courseRelation = findRelationProp(props, ['Course', 'Courses', '課程']);
+  const density = densityRaw === 'compact' || densityRaw === 'comfortable' || densityRaw === 'immersive' ? densityRaw : undefined;
+  const accentTheme = accentThemeRaw === 'theme-1' || accentThemeRaw === 'theme-2' || accentThemeRaw === 'auto' ? accentThemeRaw : undefined;
+  const mediaPriority = mediaPriorityRaw === 'image' || mediaPriorityRaw === 'text' || mediaPriorityRaw === 'balanced' ? mediaPriorityRaw : undefined;
   return {
     id: page.id,
     projectName: propText(findFirstProp(props, ['ProjectName', 'Name', 'Title'])) || pickTitle(props) || 'Untitled Project',
@@ -553,6 +559,9 @@ const normalizeProject = (page) => {
     status: propText(findFirstProp(props, ['Status', 'status'])),
     uiPattern: propText(findFirstProp(props, ['UiPattern', 'UI Pattern', 'Pattern'])),
     fieldMapping: propText(findFirstProp(props, ['FieldMapping', 'Field Mapping', 'Mapping'])),
+    density,
+    accentTheme,
+    mediaPriority,
     courseIds: propRelationIds(courseRelation)
   };
 };

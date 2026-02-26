@@ -61,6 +61,9 @@ export interface Project {
   status: string;
   uiPattern: string;
   fieldMapping: string;
+  density?: 'compact' | 'comfortable' | 'immersive';
+  accentTheme?: 'theme-1' | 'theme-2' | 'auto';
+  mediaPriority?: 'image' | 'text' | 'balanced';
   courseIds: string[];
 }
 
