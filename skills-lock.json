@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "create-design-system-rules": {
+      "source": "figma/mcp-server-guide",
+      "sourceType": "github",
+      "computedHash": "3dd355fd83051e794aef7ce2d8072881967d660e231c7a1cde3c638348c8ba71"
+    }
+  }
+}
