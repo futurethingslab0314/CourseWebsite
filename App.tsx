@@ -20,6 +20,14 @@ type SourceSnapshot = {
 type Mapping = Partial<Record<'title' | 'text' | 'image' | 'gallery' | 'link' | 'color', string>>;
 type Pattern = 'gallery-story' | 'color-swatch' | 'link-cards' | 'generic-cards';
 
+type MappedItem = {
+  title: string;
+  text: string;
+  images: string[];
+  links: string[];
+  colors: string[];
+};
+
 const parseCourseSlug = () => {
   const match = window.location.pathname.match(/^\/courses\/([^/]+)/);
   return match ? decodeURIComponent(match[1]) : null;
@@ -56,17 +64,13 @@ const resolvePattern = (uiPatternRaw: string, source: SourceSnapshot | undefined
   if (manual === 'link-cards' || manual === 'links') return 'link-cards';
   if (manual === 'generic-cards' || manual === 'generic') return 'generic-cards';
   if (!source) return 'generic-cards';
-
-  const hasGallery = source.items.some((item) => item.images.length > 1);
-  const hasColor = source.items.some((item) => item.colors.length > 0);
-  const hasLink = source.items.some((item) => item.links.length > 0);
-  if (hasGallery) return 'gallery-story';
-  if (hasColor) return 'color-swatch';
-  if (hasLink) return 'link-cards';
+  if (source.items.some((item) => item.images.length > 1)) return 'gallery-story';
+  if (source.items.some((item) => item.colors.length > 0)) return 'color-swatch';
+  if (source.items.some((item) => item.links.length > 0)) return 'link-cards';
   return 'generic-cards';
 };
 
-const resolveMappedItem = (item: SourceSnapshot['items'][number], mapping: Mapping) => {
+const resolveMappedItem = (item: SourceSnapshot['items'][number], mapping: Mapping): MappedItem => {
   const titleField = mapping.title ? item.fields[mapping.title] : undefined;
   const textField = mapping.text ? item.fields[mapping.text] : undefined;
   const imageField = mapping.image ? item.fields[mapping.image] : undefined;
@@ -83,89 +87,92 @@ const resolveMappedItem = (item: SourceSnapshot['items'][number], mapping: Mappi
   };
 };
 
-const SectionContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="mx-auto w-full max-w-[var(--container-max)] px-5 sm:px-8 lg:px-12">{children}</div>
-);
-
-const PatternGallery: React.FC<{ items: ReturnType<typeof resolveMappedItem>[] }> = ({ items }) => (
-  <div className="space-y-[var(--grid-gap-sm)]">
-      {items.map((item) => (
-        <article key={`${item.title}-${item.text}`} className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)]">
-          {item.images[0] ? <img src={item.images[0]} alt={item.title} className="h-56 w-full object-cover sm:h-72" /> : null}
-          <div className="p-4 sm:p-5">
-            <h3 className="font-['Space_Grotesk'] text-[var(--type-h3)] font-semibold text-[var(--color-text-primary)]">{item.title}</h3>
-            {item.text ? <p className="mt-2 text-[var(--type-body)] text-[var(--color-text-secondary)]">{item.text}</p> : null}
-            {item.links.length ? (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {item.links.slice(0, 3).map((link) => (
-                  <a key={link} href={link} target="_blank" rel="noreferrer" className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] px-3 py-1.5 text-[var(--type-caption)] text-[var(--color-accent-theme-2)] underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-status-info)]">
-                    Open link
-                  </a>
-                ))}
-              </div>
-            ) : null}
+const Theme1Page: React.FC<{ projectTitle: string; items: MappedItem[] }> = ({ projectTitle, items }) => {
+  const hero = items[0];
+  return (
+    <article className="border-t border-gray-100 pt-8 pb-14 md:pt-10">
+      <div className="flex flex-col gap-10 md:flex-row">
+        <div className="w-full md:w-1/3">
+          <div className="overflow-hidden rounded-sm border border-gray-100 shadow-sm">
+            <img
+              src={hero?.images[0] || 'https://picsum.photos/800/1000'}
+              alt={hero?.title || projectTitle}
+              className="w-full aspect-[4/5] object-cover grayscale hover:grayscale-0 transition-all duration-700"
+            />
           </div>
-        </article>
-      ))}
-  </div>
-);
-
-const PatternSwatch: React.FC<{ items: ReturnType<typeof resolveMappedItem>[] }> = ({ items }) => (
-  <div className="grid gap-[var(--grid-gap-md)] lg:grid-cols-2">
-    {items.map((item) => (
-      <article key={`${item.title}-${item.text}`} className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-5 shadow-[var(--shadow-sm)]">
-        <h3 className="font-['Space_Grotesk'] text-[var(--type-h3)] font-semibold">{item.title}</h3>
-        {item.text ? <p className="mt-2 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{item.text}</p> : null}
-        {item.colors.length ? (
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {item.colors.map((color) => (
-              <div key={`${item.title}-${color}`} className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] p-2">
-                <div className="h-8 rounded-[var(--radius-sm)] border border-black/10" style={{ backgroundColor: color }} />
-                <p className="mt-1 truncate font-mono text-[var(--type-micro)] text-[var(--color-text-secondary)]">{color}</p>
-              </div>
-            ))}
-          </div>
-        ) : null}
-      </article>
-    ))}
-  </div>
-);
-
-const PatternLinks: React.FC<{ items: ReturnType<typeof resolveMappedItem>[] }> = ({ items }) => (
-  <div className="grid gap-[var(--grid-gap-sm)] sm:grid-cols-2 lg:grid-cols-3">
-    {items.map((item) => (
-      <article key={`${item.title}-${item.text}`} className="flex h-full flex-col rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-4 shadow-[var(--shadow-sm)]">
-        <h3 className="font-['Space_Grotesk'] text-[var(--type-h3)] font-semibold">{item.title}</h3>
-        {item.text ? <p className="mt-2 flex-grow text-[var(--type-caption)] text-[var(--color-text-secondary)]">{item.text}</p> : null}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {item.links.slice(0, 3).map((link) => (
-            <a key={link} href={link} target="_blank" rel="noreferrer" className="rounded-[var(--radius-md)] bg-[var(--color-accent-theme-1)] px-3 py-1.5 text-[var(--type-caption)] font-medium text-white hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-status-info)]">
-              Visit
-            </a>
-          ))}
         </div>
-      </article>
-    ))}
-  </div>
-);
 
-const PatternGeneric: React.FC<{ items: ReturnType<typeof resolveMappedItem>[] }> = ({ items }) => (
-  <div className="space-y-[var(--grid-gap-sm)]">
-    {items.map((item) => (
-      <article key={`${item.title}-${item.text}`} className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-4 shadow-[var(--shadow-sm)]">
-        <h3 className="font-['Space_Grotesk'] text-[var(--type-h3)] font-semibold">{item.title}</h3>
-        {item.text ? <p className="mt-2 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{item.text}</p> : null}
-        {item.images.length ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {item.images.slice(0, 4).map((img) => (
-              <img key={img} src={img} alt={item.title} className="h-16 w-16 rounded-[var(--radius-md)] object-cover" />
+        <div className="w-full md:w-2/3">
+          <h2 className="text-3xl md:text-4xl font-light tracking-tight">{projectTitle}</h2>
+          <p className="mt-4 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{hero?.text || ''}</p>
+
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {items.slice(0, 6).map((item) => (
+              <div key={`${projectTitle}-${item.title}-${item.text}`} className="bg-white p-4 rounded-sm border border-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.04)]">
+                <h3 className="text-sm font-semibold text-gray-900">{item.title}</h3>
+                {item.text ? <p className="mt-2 text-xs text-gray-600 leading-relaxed">{item.text}</p> : null}
+                {item.colors.length ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.colors.slice(0, 4).map((c) => (
+                      <span key={c} className="inline-flex items-center gap-1 border border-gray-100 px-2 py-1 text-[10px] rounded-sm">
+                        <span className="w-2.5 h-2.5 rounded-full border border-black/10" style={{ backgroundColor: c }} />
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             ))}
           </div>
-        ) : null}
-      </article>
-    ))}
-  </div>
-);
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const Theme2Page: React.FC<{ projectTitle: string; items: MappedItem[] }> = ({ projectTitle, items }) => {
+  const cover = items[0]?.images[0] || 'https://picsum.photos/1280/800';
+  return (
+    <article className="border-t border-gray-100 py-10 md:py-14">
+      <div className="group relative">
+        <div className="aspect-[16/10] overflow-hidden bg-gray-50 rounded-sm shadow-sm">
+          <img src={cover} alt={projectTitle} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+        </div>
+        <h2 className="mt-6 text-4xl md:text-5xl font-light tracking-tight leading-none text-gray-800">{projectTitle}</h2>
+      </div>
+
+      <div className="mt-10 grid grid-cols-1 md:grid-cols-12 gap-10">
+        <div className="md:col-span-4 lg:col-span-3">
+          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap italic border-l-4 border-blue-50 pl-5">
+            {items[0]?.text || ''}
+          </p>
+        </div>
+        <div className="md:col-span-8 lg:col-span-9">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {items.slice(0, 8).map((item) => (
+              <div key={`${projectTitle}-${item.title}-${item.text}`} className="space-y-3">
+                <div className="aspect-[4/3] overflow-hidden rounded-sm border border-gray-100">
+                  <img src={item.images[0] || cover} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+                </div>
+                <h3 className="text-sm font-semibold">{item.title}</h3>
+                {item.text ? <p className="text-xs text-gray-500 leading-relaxed">{item.text}</p> : null}
+                {item.links.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {item.links.slice(0, 3).map((link) => (
+                      <a key={link} href={link} target="_blank" rel="noreferrer" className="text-[11px] text-blue-600 underline underline-offset-2">
+                        View link
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+};
 
 const App: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -174,6 +181,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeSlug, setActiveSlug] = useState<string | null>(parseCourseSlug());
+  const [projectPage, setProjectPage] = useState(0);
 
   useEffect(() => {
     const onPopState = () => setActiveSlug(parseCourseSlug());
@@ -217,6 +225,16 @@ const App: React.FC = () => {
   }, [currentCourse, projects]);
 
   useEffect(() => {
+    setProjectPage(0);
+  }, [currentCourse?.id]);
+
+  useEffect(() => {
+    if (projectPage >= courseProjects.length && courseProjects.length > 0) {
+      setProjectPage(0);
+    }
+  }, [projectPage, courseProjects.length]);
+
+  useEffect(() => {
     if (!currentCourse) return;
     const uncachedDbIds = courseProjects.map((project) => project.sourceDatabaseId).filter((dbId) => dbId && !sourceMap[dbId]);
     if (!uncachedDbIds.length) return;
@@ -242,6 +260,7 @@ const App: React.FC = () => {
     window.history.pushState({}, '', `/courses/${encodeURIComponent(slug)}`);
     setActiveSlug(slug);
   };
+
   const goHome = () => {
     window.history.pushState({}, '', '/');
     setActiveSlug(null);
@@ -253,13 +272,10 @@ const App: React.FC = () => {
   if (!activeSlug) {
     return (
       <main className="min-h-screen bg-[var(--color-bg-canvas)] py-[var(--section-padding-y)]">
-        <SectionContainer>
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 sm:px-8 lg:px-12">
           <section className="rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 shadow-[var(--shadow-md)] sm:p-10">
-            <p className="text-[var(--type-micro)] tracking-[var(--tracking-wide)] text-[var(--color-accent-theme-2)]">COURSE WEBSITE</p>
-            <h1 className="mt-2 font-['Space_Grotesk'] text-[var(--type-display)] font-bold leading-[1.05] text-[var(--color-text-primary)]">Notion-Driven Course Showcase</h1>
-            <p className="mt-4 max-w-3xl text-[var(--type-body)] text-[var(--color-text-secondary)]">
-              Core tokens are fixed. Assignment pages vary only by `UiPattern` and `FieldMapping`, with data sourced from each project `SourceDatabaseId`.
-            </p>
+            <h1 className="font-['Space_Grotesk'] text-[var(--type-display)] font-bold leading-[1.05] text-[var(--color-text-primary)]">Notion-Driven Course Showcase</h1>
+            <p className="mt-4 max-w-3xl text-[var(--type-body)] text-[var(--color-text-secondary)]">Open a course to view assignment projects in paged presentation mode.</p>
           </section>
 
           <section className="mt-[var(--space-10)] grid gap-[var(--grid-gap-md)] md:grid-cols-2">
@@ -270,14 +286,14 @@ const App: React.FC = () => {
                   <p className="text-[var(--type-micro)] tracking-[var(--tracking-wide)] text-[var(--color-accent-theme-1)]">/{course.slug}</p>
                   <h2 className="mt-1 font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold text-[var(--color-text-primary)]">{course.courseName}</h2>
                   <p className="mt-2 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{course.courseSummary || 'No summary provided.'}</p>
-                  <button onClick={() => goToCourse(course.slug)} className="mt-5 rounded-[var(--radius-md)] bg-[var(--color-accent-theme-1)] px-4 py-2 text-[var(--type-caption)] font-medium text-white hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-status-info)]">
+                  <button onClick={() => goToCourse(course.slug)} className="mt-5 rounded-[var(--radius-md)] bg-[var(--color-accent-theme-1)] px-4 py-2 text-[var(--type-caption)] font-medium text-white hover:opacity-90">
                     Open course
                   </button>
                 </div>
               </article>
             ))}
           </section>
-        </SectionContainer>
+        </div>
       </main>
     );
   }
@@ -285,20 +301,28 @@ const App: React.FC = () => {
   if (!currentCourse) {
     return (
       <main className="min-h-screen bg-[var(--color-bg-canvas)] py-[var(--section-padding-y)]">
-        <SectionContainer>
+        <div className="mx-auto w-full max-w-[var(--container-max)] px-5 sm:px-8 lg:px-12">
           <p className="text-[var(--type-body)] text-[var(--color-text-secondary)]">Course not found: /courses/{activeSlug}</p>
           <button onClick={goHome} className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] px-4 py-2 text-[var(--type-caption)]">Back home</button>
-        </SectionContainer>
+        </div>
       </main>
     );
   }
 
+  const activeProject = courseProjects[projectPage];
+  const activeSource = activeProject ? sourceMap[activeProject.sourceDatabaseId] : undefined;
+  const activePattern = activeProject ? resolvePattern(activeProject.uiPattern, activeSource) : 'generic-cards';
+  const activeMapping = activeProject ? parseFieldMapping(activeProject.fieldMapping) : {};
+  const mappedItems = activeSource ? activeSource.items.map((item) => resolveMappedItem(item, activeMapping)).slice(0, 8) : [];
+  const useTheme2 = activePattern === 'gallery-story' || projectPage % 2 === 1;
+
   return (
     <main className="min-h-screen bg-[var(--color-bg-canvas)] py-[var(--section-padding-y)]">
-      <SectionContainer>
-        <button onClick={goHome} className="mb-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-3 py-2 text-[var(--type-caption)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-status-info)]">
+      <div className="mx-auto w-full max-w-[var(--container-max)] px-5 sm:px-8 lg:px-12">
+        <button onClick={goHome} className="mb-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-3 py-2 text-[var(--type-caption)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
           Back to all courses
         </button>
+
         <section className="overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-md)]">
           {currentCourse.coverImage ? <img src={currentCourse.coverImage} alt={currentCourse.courseName} className="h-60 w-full object-cover md:h-80" /> : null}
           <div className="p-6 sm:p-8">
@@ -307,39 +331,58 @@ const App: React.FC = () => {
           </div>
         </section>
 
-        <section className="mt-[var(--space-10)] space-y-[var(--grid-gap-md)]">
-          {courseProjects.map((project) => {
-            const source = sourceMap[project.sourceDatabaseId];
-            const mapping = parseFieldMapping(project.fieldMapping);
-            const pattern = resolvePattern(project.uiPattern, source);
-            const mappedItems = (source?.items || []).map((item) => resolveMappedItem(item, mapping)).slice(0, 8);
+        {courseProjects.length > 0 ? (
+          <section className="mt-8 rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-white p-4 sm:p-6">
+            <div className="mb-4 flex flex-wrap gap-2">
+              {courseProjects.map((project, idx) => (
+                <button
+                  key={project.id}
+                  onClick={() => setProjectPage(idx)}
+                  className={`px-3 py-1.5 text-xs rounded-sm border transition-all ${
+                    idx === projectPage ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                  }`}
+                >
+                  {project.tabName || `Project ${idx + 1}`}
+                </button>
+              ))}
+            </div>
 
-            return (
-              <article key={project.id} className="rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
-                <div>
-                  <h2 className="font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold text-[var(--color-text-primary)]">{project.tabName || project.projectName}</h2>
-                  <p className="mt-1 text-[var(--type-caption)] text-[var(--color-text-secondary)]">{project.projectName}</p>
+            {activeProject ? (
+              <>
+                {useTheme2 ? (
+                  <Theme2Page projectTitle={activeProject.tabName || activeProject.projectName} items={mappedItems} />
+                ) : (
+                  <Theme1Page projectTitle={activeProject.tabName || activeProject.projectName} items={mappedItems} />
+                )}
+
+                <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
+                  <button
+                    onClick={() => setProjectPage((p) => Math.max(0, p - 1))}
+                    disabled={projectPage === 0}
+                    className="px-4 py-2 text-xs uppercase tracking-wider border border-gray-200 rounded-sm disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+                  <p className="text-xs text-gray-500">
+                    {projectPage + 1} / {courseProjects.length}
+                  </p>
+                  <button
+                    onClick={() => setProjectPage((p) => Math.min(courseProjects.length - 1, p + 1))}
+                    disabled={projectPage === courseProjects.length - 1}
+                    className="px-4 py-2 text-xs uppercase tracking-wider border border-gray-200 rounded-sm disabled:opacity-40"
+                  >
+                    Next
+                  </button>
                 </div>
-
-                <div className="mt-4">
-                  {pattern === 'gallery-story' ? <PatternGallery items={mappedItems} /> : null}
-                  {pattern === 'color-swatch' ? <PatternSwatch items={mappedItems} /> : null}
-                  {pattern === 'link-cards' ? <PatternLinks items={mappedItems} /> : null}
-                  {pattern === 'generic-cards' ? <PatternGeneric items={mappedItems} /> : null}
-
-                  {source && source.items.length === 0 ? <p className="mt-3 text-[var(--type-caption)] text-[var(--color-text-secondary)]">No work items available.</p> : null}
-                </div>
-              </article>
-            );
-          })}
-
-          {courseProjects.length === 0 ? (
-            <section className="rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-8 text-center text-[var(--type-body)] text-[var(--color-text-secondary)]">
-              No published projects linked to this course.
-            </section>
-          ) : null}
-        </section>
-      </SectionContainer>
+              </>
+            ) : null}
+          </section>
+        ) : (
+          <section className="mt-8 rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-8 text-center text-[var(--type-body)] text-[var(--color-text-secondary)]">
+            No published projects linked to this course.
+          </section>
+        )}
+      </div>
     </main>
   );
 };
