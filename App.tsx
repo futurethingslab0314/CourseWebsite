@@ -31,13 +31,6 @@ type MappedItem = {
   colors: string[];
 };
 
-const PATTERN_LABEL: Record<Pattern, string> = {
-  'gallery-story': 'Gallery Story',
-  'color-swatch': 'Color Swatch',
-  'link-cards': 'Link Cards',
-  'generic-cards': 'Generic Cards'
-};
-
 const parseCourseSlug = () => {
   const match = window.location.pathname.match(/^\/courses\/([^/]+)/);
   return match ? decodeURIComponent(match[1]) : null;
@@ -479,7 +472,9 @@ const App: React.FC = () => {
                 <section className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-5 py-4">
                   <div>
                     <h2 className="font-['Space_Grotesk'] text-[var(--type-h2)] font-semibold">{activeProject.tabName || activeProject.projectName}</h2>
-                    <p className="mt-1 text-[var(--type-caption)] text-[var(--color-text-secondary)]">Pattern module: {PATTERN_LABEL[activePattern]}</p>
+                    <p className="mt-1 text-[var(--type-caption)] text-[var(--color-text-secondary)]">
+                      {activeProject.projectDescription || 'No project description provided.'}
+                    </p>
                   </div>
                   <p className="rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] px-3 py-1 text-[var(--type-micro)] uppercase tracking-[var(--tracking-wide)] text-[var(--color-text-secondary)]">
                     {projectPage + 1} / {courseProjects.length}

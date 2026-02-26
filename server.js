@@ -725,6 +725,7 @@ const normalizeProject = (page) => {
     id: page.id,
     projectName: propText(findFirstProp(props, ['ProjectName', 'Name', 'Title'])) || pickTitle(props) || 'Untitled Project',
     tabName: propText(findFirstProp(props, ['TabName', 'ProjectName', 'Name'])) || pickTitle(props) || 'Project',
+    projectDescription: propText(findFirstProp(props, ['ProjectDescription', 'Project Description', 'Description', 'Summary'])),
     order: Number.isFinite(orderValue) ? orderValue : Number.MAX_SAFE_INTEGER,
     sourceDatabaseId: extractNotionId(sourceRaw),
     status: propText(findFirstProp(props, ['Status', 'status'])),

@@ -59,6 +59,7 @@ export interface Project {
   id: string;
   projectName: string;
   tabName: string;
+  projectDescription?: string;
   order: number;
   sourceDatabaseId: string;
   status: string;
