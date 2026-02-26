@@ -40,3 +40,42 @@ export interface Filters {
   year: string;
   tag: string;
 }
+
+export interface Course {
+  id: string;
+  slug: string;
+  courseName: string;
+  courseSummary: string;
+  coverImage: string;
+  courseLink: string;
+  status: string;
+  projectIds: string[];
+}
+
+export interface Project {
+  id: string;
+  projectName: string;
+  tabName: string;
+  order: number;
+  sourceDatabaseId: string;
+  status: string;
+  uiPattern: string;
+  fieldMapping: string;
+  courseIds: string[];
+}
+
+export interface NotionDatabaseProperty {
+  id: string;
+  name: string;
+  type: string;
+}
+
+export interface NormalizedSourceItem {
+  id: string;
+  title: string;
+  text: string;
+  images: string[];
+  links: string[];
+  colors: string[];
+  fields: Record<string, { text: string; images: string[]; links: string[]; colors: string[] }>;
+}

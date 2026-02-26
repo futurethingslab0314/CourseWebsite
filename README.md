@@ -1,15 +1,18 @@
 # CourseWebsite
 
-This project now fetches Notion data through a backend API route (`/api/notion`) so your Notion token and database IDs can be stored safely in Railway environment variables.
+This project now fetches Notion data through backend API routes so your Notion token and database IDs can be stored safely in Railway environment variables.
 
 ## Environment Variables
 
 Set these variables in Railway:
 
 - `NOTION_API_KEY`: your Notion integration secret
-- `NOTION_DATABASE_ID_THEME_1`: database ID for theme 1
-- `NOTION_DATABASE_ID_THEME_2`: database ID for theme 2
+- `NOTION_DATABASE_ID_THEME_1`: Courses database ID
+- `NOTION_DATABASE_ID_THEME_2`: Projects database ID
 - `NOTION_VERSION` (optional): default is `2022-06-28`
+- `PUBLIC_SITE_URL`: deployed site base URL (example: `https://your-domain.com`)
+- `ENABLE_COURSE_LINK_WRITEBACK`: set `true` to auto-sync `CourseLink` on server start (recommended in production)
+- `COURSE_LINK_SYNC_SECRET` (optional): secret for manual sync endpoint
 - `PORT` (optional): Railway usually injects this automatically
 
 ## Local Development
@@ -22,6 +25,29 @@ Set these variables in Railway:
    - `NOTION_DATABASE_ID_THEME_2=...`
 3. Start frontend + backend together:
    `npm run dev`
+
+## API Overview
+
+- `GET /api/courses`: reads Courses from `NOTION_DATABASE_ID_THEME_1` (published only)
+- `GET /api/projects`: reads Projects from `NOTION_DATABASE_ID_THEME_2` (published only)
+- `GET /api/source-database/:databaseId`: fetches schema + rows for each project `SourceDatabaseId`
+- `POST /api/admin/sync-course-links`: manually trigger `CourseLink` write-back (header `x-sync-secret` if configured)
+
+The frontend then resolves:
+`Courses -> Projects -> SourceDatabaseId -> /courses/[slug]`
+
+## FieldMapping / UiPattern
+
+- `FieldMapping` supports JSON (recommended) or `key:value` text.
+- Example:
+  `{"title":"作品名稱","text":"敘述","gallery":"作品圖集","link":"專案連結","color":"主色"}`
+- Supported mapping keys: `title`, `text`, `image`, `gallery`, `link`, `color`
+- `UiPattern` supports:
+  - `gallery-story`
+  - `color-swatch`
+  - `link-cards`
+  - `generic-cards`
+- If `UiPattern` is empty, system auto-selects based on data.
 
 ## Railway Deploy
 
