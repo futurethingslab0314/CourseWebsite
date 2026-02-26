@@ -32,6 +32,7 @@ Set these variables in Railway:
 - `GET /api/projects`: reads Projects from `NOTION_DATABASE_ID_THEME_2` (published only)
 - `GET /api/source-database/:databaseId`: fetches schema + rows for each project `SourceDatabaseId`
 - `POST /api/admin/sync-course-links`: manually trigger `CourseLink` write-back (header `x-sync-secret` if configured)
+- `POST /api/admin/sync-course-link`: manually trigger one course `CourseLink` write-back by `coursePageId` or `slug`
 
 The frontend then resolves:
 `Courses -> Projects -> SourceDatabaseId -> /courses/[slug]`
@@ -48,6 +49,23 @@ The frontend then resolves:
   - `link-cards`
   - `generic-cards`
 - If `UiPattern` is empty, system auto-selects based on data.
+
+## Notion Button (Single Course Link)
+
+You can use a Notion Button automation action `Send webhook` to update only the clicked course row.
+
+Example webhook config:
+
+- URL: `https://your-domain.com/api/admin/sync-course-link`
+- Method: `POST`
+- Header:
+  - `Content-Type: application/json`
+  - `x-sync-secret: <COURSE_LINK_SYNC_SECRET>` (if configured)
+- Body (use Notion page variable for page id):
+  - `{"coursePageId":"{{Page ID}}"}`
+
+Alternative by slug:
+- `{"slug":"{{Slug}}"}`
 
 ## Railway Deploy
 

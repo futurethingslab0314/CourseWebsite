@@ -241,6 +241,57 @@ const syncCourseLinks = async (baseUrl) => {
   return { updated, skipped, total: pages.length };
 };
 
+const syncSingleCourseLink = async ({ baseUrl, coursePageId, slug }) => {
+  if (!notionApiKey) throw new Error('Missing env var: NOTION_API_KEY');
+  if (!coursesDatabaseId) throw new Error('Missing env var: NOTION_DATABASE_ID_THEME_1 (Courses DB)');
+  if (!baseUrl) throw new Error('Missing env var: PUBLIC_SITE_URL or SITE_BASE_URL');
+  if (!coursePageId && !slug) throw new Error('Provide coursePageId or slug');
+
+  const db = await retrieveNotionDatabase(coursesDatabaseId);
+  const courseLinkProp = db?.properties?.CourseLink;
+  if (!courseLinkProp) throw new Error('Courses DB missing CourseLink property');
+  const courseLinkPropType = courseLinkProp.type || 'url';
+
+  const pages = await queryAllNotionPages(coursesDatabaseId);
+  const target = pages.find((page) => {
+    if (coursePageId && page.id === coursePageId) return true;
+    if (slug) {
+      const normalized = normalizeCourse(page);
+      return normalized.slug.toLowerCase() === slug.toLowerCase();
+    }
+    return false;
+  });
+
+  if (!target) {
+    throw new Error('Target course not found in Courses database');
+  }
+
+  if (!hasPublishedStatus(target.properties)) {
+    throw new Error('Target course is not published');
+  }
+
+  const course = normalizeCourse(target);
+  if (!course.slug) {
+    throw new Error('Target course has no slug');
+  }
+
+  const targetUrl = buildCourseUrl(baseUrl, course.slug);
+  if (course.courseLink !== targetUrl) {
+    await updateNotionPage(course.id, {
+      properties: {
+        CourseLink: buildCourseLinkPropPayload(courseLinkPropType, targetUrl)
+      }
+    });
+  }
+
+  return {
+    updated: course.courseLink === targetUrl ? 0 : 1,
+    coursePageId: course.id,
+    slug: course.slug,
+    courseLink: targetUrl
+  };
+};
+
 const normalizeProject = (page) => {
   const props = page.properties || {};
   const orderValue = Number(propText(props.Order));
@@ -375,6 +426,29 @@ app.post('/api/admin/sync-course-links', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       error: 'Failed to sync course links',
+      detail: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+app.post('/api/admin/sync-course-link', async (req, res) => {
+  if (courseLinkSyncSecret) {
+    const incomingSecret = req.get('x-sync-secret') || req.body?.secret;
+    if (incomingSecret !== courseLinkSyncSecret) {
+      return res.status(401).json({ error: 'Unauthorized sync request' });
+    }
+  }
+
+  const baseUrl = req.body?.baseUrl || siteBaseUrl;
+  const coursePageId = req.body?.coursePageId || req.body?.pageId || req.query?.pageId;
+  const slug = req.body?.slug || req.query?.slug;
+
+  try {
+    const result = await syncSingleCourseLink({ baseUrl, coursePageId, slug });
+    return res.json({ ok: true, ...result });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Failed to sync one course link',
       detail: error instanceof Error ? error.message : 'Unknown error'
     });
   }
